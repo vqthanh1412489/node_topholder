@@ -62,7 +62,7 @@ async function main() {
     // }).catch(error => console.log(error))
 
 
-    // let countItemSuccess = 0;
+    let countItemSuccess = 0;
     // for (let i = 0; i < myTokens.length; i++) {
     //     try {
     //         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
@@ -79,6 +79,8 @@ async function main() {
     cron.schedule('*/30 * * * * *', () => {
         // cron.schedule('0 7 * * *', () => {
         console.log('running a task every day at 7:00 AM');
+        const telegramService = new TelegramServices();
+        telegramService.sendMessage(`${countItemSuccess === myTokens.length ? 'All' : countItemSuccess} items are exported successfully`);
     }, {
         scheduled: true,
         timezone: "Asia/Ho_Chi_Minh"

@@ -9,8 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const providers_1 = require("./providers");
 const export_topholder_controller_1 = require("./controllers/export_topholder.controller");
-var cron = require('node-cron');
+const constants_1 = require("./utils/constants");
+const cron = require('node-cron');
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const exportTopholderController = new export_topholder_controller_1.ExportTopholderController();
@@ -59,7 +61,7 @@ function main() {
         //         console.log('Connection closed')
         //     }).catch(error => console.log(error))
         // }).catch(error => console.log(error))
-        // let countItemSuccess = 0;
+        let countItemSuccess = 0;
         // for (let i = 0; i < myTokens.length; i++) {
         //     try {
         //         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
@@ -71,8 +73,14 @@ function main() {
         // }
         // const telegramService = new TelegramServices();
         // telegramService.sendMessage(`${countItemSuccess === myTokens.length ? 'All' : countItemSuccess} items are exported successfully`);
-        cron.schedule('1,2,4,5 * * * *', () => {
-            console.log('running every minute 1, 2, 4 and 5');
+        cron.schedule('*/30 * * * * *', () => {
+            // cron.schedule('0 7 * * *', () => {
+            console.log('running a task every day at 7:00 AM');
+            const telegramService = new providers_1.TelegramServices();
+            telegramService.sendMessage(`${countItemSuccess === constants_1.myTokens.length ? 'All' : countItemSuccess} items are exported successfully`);
+        }, {
+            scheduled: true,
+            timezone: "Asia/Ho_Chi_Minh"
         });
     });
 }

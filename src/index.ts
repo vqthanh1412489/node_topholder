@@ -62,23 +62,19 @@ async function main() {
     // }).catch(error => console.log(error))
 
 
-    let countItemSuccess = 0;
-    // for (let i = 0; i < myTokens.length; i++) {
-    //     try {
-    //         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
-    //         countItemSuccess++;
-    //     } catch (error) {
-    //         console.log(`Error: ${error.toString()}`)
-    //         break
-    //     }
-    // }
+    // cron.schedule('*/30 * * * * *', async () => {
+    cron.schedule('0 7 * * *', async () => {
+        let countItemSuccess = 0;
+        for (let i = 0; i < myTokens.length; i++) {
+            try {
+                await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+                countItemSuccess++;
+            } catch (error) {
+                console.log(`Error: ${error.toString()}`)
+                break
+            }
+        }
 
-    // const telegramService = new TelegramServices();
-    // telegramService.sendMessage(`${countItemSuccess === myTokens.length ? 'All' : countItemSuccess} items are exported successfully`);
-
-    cron.schedule('*/30 * * * * *', () => {
-        // cron.schedule('0 7 * * *', () => {
-        console.log('running a task every day at 7:00 AM');
         const telegramService = new TelegramServices();
         telegramService.sendMessage(`${countItemSuccess === myTokens.length ? 'All' : countItemSuccess} items are exported successfully`);
     }, {

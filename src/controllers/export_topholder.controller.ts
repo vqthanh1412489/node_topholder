@@ -103,13 +103,13 @@ class ExportTopholderController {
 
                     shouldContinue = resp[resp.length - 1].amount >= item.minBalance;
                     // if (this.currentProvider === EProvider.Chainbase) {
-                    // await new Promise((resolve) => setTimeout(resolve, 200));
+                    await new Promise((resolve) => setTimeout(resolve, 200));
                     // }
                     console.log(`process: ${chain.address} ${page} ${temp.length}`);
                 }
             }
 
-            console.log(`temp ${temp.length}`);
+            // console.log(`temp ${temp.length}`);
             await this.loadData({
                 chainBases: temp,
                 excelItemRows,
@@ -118,6 +118,7 @@ class ExportTopholderController {
             console.log(`onExportTopHolderByDay ${item.name} done`);
         } catch (e) {
             console.log(`onExportTopHolderByDay Error: ${e}`);
+            throw e;
         }
     }
 }

@@ -61,6 +61,7 @@ async function main() {
     //     }).catch(error => console.log(error))
     // }).catch(error => console.log(error))
     await exportTopholderController.loadHotColdAddresses();
+    console.log('Server is running...')
 
     // await exportTopholderController.onProcessData(myTokens[2])
     // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))

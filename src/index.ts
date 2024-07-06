@@ -8,7 +8,7 @@ const cron = require('node-cron');
 
 async function main() {
     const exportTopholderController = new ExportTopholderController();
-    const googlesheetServices = new GooglesheetServices();
+    // const googlesheetServices = new GooglesheetServices();
     // AppDataSource.initialize().then(async () => {
     //     const rows = await GooglesheetServices.getListAddressBySheetName('USDC');
 

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleSheetSpreadsheetId = exports.googleSheetCredentials = exports.myTokens = void 0;
+exports.PERCENT_TRACKING_ALLET_CHECK = exports.PERCENT_COLD_WALLET_CHECK = exports.PERCENT_HOT_WALLET_CHECK = exports.COLUMN_BEGIN_DATA = exports.googleSheetSpreadsheetId = exports.googleSheetCredentials = exports.myTokens = void 0;
 const enums_1 = require("./enums");
 const my_token_m_1 = require("../models/my_token_m");
 const address_by_chain_m_1 = require("../models/address_by_chain_m");
@@ -198,6 +198,16 @@ exports.myTokens = [
         minBalance: 50000,
     }),
     // new MyTokenM({
+    //     name: '0x0',
+    //     chains: [
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Ethereum,
+    //             address: '0x5a3e6A77ba2f983eC0d371ea3B475F8Bc0811AD5',
+    //         }),
+    //     ],
+    //     minBalance: 10000,
+    // }),
+    // new MyTokenM({
     //     name: 'ARB',
     //     chains: [
     //         new AddressByChainM({
@@ -239,6 +249,10 @@ exports.googleSheetCredentials = {
     client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/flutterarkham1%40flutterarkham.iam.gserviceaccount.com",
     universe_domain: "googleapis.com"
 };
-// export const googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
-exports.googleSheetSpreadsheetId = '1Q_gXZjghHyBi4lY7hbdsWWIWVCenCJpnPJ9EixmBOZU'; // DATA copy
+exports.googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
+// export const googleSheetSpreadsheetId = '1cp-LsXx02w8mWiGGJhnH-ETzsyqppmjw_3T5kto2cGE'; // DATA copy
+exports.COLUMN_BEGIN_DATA = 5;
+exports.PERCENT_HOT_WALLET_CHECK = 15;
+exports.PERCENT_COLD_WALLET_CHECK = 15;
+exports.PERCENT_TRACKING_ALLET_CHECK = 15;
 //# sourceMappingURL=constants.js.map

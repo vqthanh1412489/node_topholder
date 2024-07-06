@@ -18,13 +18,21 @@ class ExportTopholderController {
     constructor() {
         this.tronNetworkProvider = new providers_1.TronNetworkProvider();
         this.chainbaseProvider = new providers_1.ChainbaseProvider();
+        this.hotAddresses = [];
+        this.coldAddresses = [];
         this.currentProvider = utils_1.EProvider.Chainbase;
+    }
+    loadHotColdAddresses() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.hotAddresses = yield services_1.GooglesheetServices.getAndFilterAddressesBySheetName('HOTS');
+            this.coldAddresses = yield services_1.GooglesheetServices.getAndFilterAddressesBySheetName('COLDS');
+        });
     }
     loadData(_a) {
         return __awaiter(this, arguments, void 0, function* ({ chainBases, excelItemRows, myToken, }) {
             let insertDataColumns = [];
             const date = new Date();
-            const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+            const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
             insertDataColumns.push([dateString]);
             const mergedData = models_1.AddressWithBalanceM.mergeDuplicateAddresses(chainBases);
             const filteredData = mergedData.filter((element) => element.amount >= myToken.minBalance);
@@ -44,19 +52,15 @@ class ExportTopholderController {
                 }
             }
             const differenceList = models_1.AddressWithBalanceM.findDifferenceWithExcelItem(filteredData, excelItemRows);
-            // if (differenceList.length > 0) {
-            //     for (const e of differenceList) {
-            //         insertDataColumns.push([e.amount.toString()]);
-            //     }
-            // }
+            yield services_1.GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
             yield services_1.GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, differenceList);
+            yield this.onProcessData(myToken);
             console.log(`loadData ${myToken.name} done`);
         });
     }
     onExportTopHolderByDay(item) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(`onExportTopHolderByDay ${item.name}`);
                 const excelItemRows = yield services_1.GooglesheetServices.getListAddressBySheetName(item.name);
                 const temp = [];
                 for (let indexChain = 0; indexChain < item.chains.length; indexChain++) {
@@ -91,12 +95,12 @@ class ExportTopholderController {
                         page++;
                         shouldContinue = resp[resp.length - 1].amount >= item.minBalance;
                         // if (this.currentProvider === EProvider.Chainbase) {
-                        // await new Promise((resolve) => setTimeout(resolve, 200));
+                        yield new Promise((resolve) => setTimeout(resolve, 1000));
                         // }
                         console.log(`process: ${chain.address} ${page} ${temp.length}`);
                     }
                 }
-                console.log(`temp ${temp.length}`);
+                // console.log(`temp ${temp.length}`);
                 yield this.loadData({
                     chainBases: temp,
                     excelItemRows,
@@ -106,6 +110,39 @@ class ExportTopholderController {
             }
             catch (e) {
                 console.log(`onExportTopHolderByDay Error: ${e}`);
+                throw e;
+            }
+        });
+    }
+    onProcessData(item) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const addressesWithBalance = yield services_1.GooglesheetServices.getAddressesMoreBalance(item.name);
+            const itemHotAddresses = addressesWithBalance.filter((e) => this.hotAddresses.includes(e.address));
+            const itemColdAddresses = addressesWithBalance.filter((e) => this.coldAddresses.includes(e.address));
+            const itemTrackingAddress = addressesWithBalance.filter((e) => e.isTracking);
+            const totalPrevousAmountHotAddresses = itemHotAddresses.reduce((acc, e) => acc + e.prevousAmount, 0);
+            const totalCurrentAmountHotAddresses = itemHotAddresses.reduce((acc, e) => acc + e.currentAmount, 0);
+            const totalPrevousAmountColdAddresses = itemColdAddresses.reduce((acc, e) => acc + e.prevousAmount, 0);
+            const totalCurrentAmountColdAddresses = itemColdAddresses.reduce((acc, e) => acc + e.currentAmount, 0);
+            const totalPrevousAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.prevousAmount, 0);
+            const totalCurrentAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.currentAmount, 0);
+            // const a = findDuplicates(this.hotAddresses, this.coldAddresses);
+            // for (const item of a) {
+            //     console.log(`item: ${item}`);
+            // }
+            // console.log(`totalPrevousAmountHotAddresses: ${totalPrevousAmountHotAddresses}`);
+            // console.log(`totalCurrentAmountHotAddresses: ${totalCurrentAmountHotAddresses}`);
+            // console.log(`totalPrevousAmountColdAddresses: ${totalPrevousAmountColdAddresses}`);
+            // console.log(`totalCurrentAmountColdAddresses: ${totalCurrentAmountColdAddresses}`);
+            const percentHot = (0, utils_1.calculatePercentageDifference)(totalPrevousAmountHotAddresses, totalCurrentAmountHotAddresses);
+            // console.log(`percentHot: ${percentHot}`);
+            const percentCold = (0, utils_1.calculatePercentageDifference)(totalPrevousAmountColdAddresses, totalCurrentAmountColdAddresses);
+            // console.log(`percentCold: ${percentCold}`);
+            const percentTracking = (0, utils_1.calculatePercentageDifference)(totalPrevousAmountTrackingAddresses, totalCurrentAmountTrackingAddresses);
+            // console.log(`percentTracking: ${percentTracking}`);
+            if (Math.abs(percentHot) >= utils_1.PERCENT_HOT_WALLET_CHECK || Math.abs(percentCold) >= utils_1.PERCENT_COLD_WALLET_CHECK || Math.abs(percentTracking) >= utils_1.PERCENT_TRACKING_ALLET_CHECK) {
+                const telegramService = new providers_1.TelegramServices();
+                telegramService.sendMessage((0, utils_1.escapeSpecialCharacters)(`[${item.name}] Hot: ${percentHot}% Cold: ${percentCold}% Tracking: ${percentTracking}%`));
             }
         });
     }

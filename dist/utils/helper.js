@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertZeroAfterAddress = exports.getRandomItem = exports.removeDuplicates = exports.removeEmptyItemInList = exports.removeDuplicatesItemInList = exports.convertToDecimal = exports.getCommonName = exports.getType = exports.getArkhamLabel = exports.getEntityName = exports.getChain = void 0;
+exports.findDuplicates = exports.escapeSpecialCharacters = exports.calculatePercentageDifference = exports.insertZeroAfterAddress = exports.getRandomItem = exports.removeDuplicates = exports.removeEmptyItemInList = exports.removeDuplicatesItemInList = exports.convertToDecimal = exports.getCommonName = exports.getType = exports.getArkhamLabel = exports.getEntityName = exports.getChain = void 0;
 function getChain(instance) {
     return instance.chain || '';
 }
@@ -115,4 +115,19 @@ function insertZeroAfterAddress(originalArray, dayNotFound, address) {
     return newArray;
 }
 exports.insertZeroAfterAddress = insertZeroAfterAddress;
+function calculatePercentageDifference(prevousAmount, currentAmount) {
+    const difference = currentAmount - prevousAmount;
+    const percentageDifference = (difference / prevousAmount) * 100;
+    return percentageDifference;
+}
+exports.calculatePercentageDifference = calculatePercentageDifference;
+function escapeSpecialCharacters(message) {
+    return message.replace(/([_*\[\]()~`>#+-=|{}.!\\])/g, '\\$1');
+}
+exports.escapeSpecialCharacters = escapeSpecialCharacters;
+function findDuplicates(a1, a2) {
+    const duplicates = a1.filter(item => a2.includes(item));
+    return duplicates;
+}
+exports.findDuplicates = findDuplicates;
 //# sourceMappingURL=helper.js.map

@@ -21,4 +21,5 @@ __exportStar(require("./address_with_balance_m"), exports);
 __exportStar(require("./my_token_m"), exports);
 __exportStar(require("./tron_network_m"), exports);
 __exportStar(require("./arkham_address_info_m"), exports);
+__exportStar(require("./address_more_balance_m"), exports);
 //# sourceMappingURL=index.js.map

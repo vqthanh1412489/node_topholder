@@ -1,15 +1,23 @@
-import { ChainbaseProvider, TronNetworkProvider } from "../providers";
-import { GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork } from "../utils";
-import { AddressWithBalanceM, MyTokenM } from "../models";
+import { ChainbaseProvider, TelegramServices, TronNetworkProvider } from "../providers";
+import { GooglesheetBaseServices, GooglesheetServices } from "../services";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, findDuplicates, } from "../utils";
+import { AddressMoreBalanceM, AddressWithBalanceM, MyTokenM } from "../models";
 
 class ExportTopholderController {
     private currentProvider: EProvider;
     private tronNetworkProvider = new TronNetworkProvider();
     private chainbaseProvider = new ChainbaseProvider();
 
+    private hotAddresses: string[] = [];
+    private coldAddresses: string[] = [];
+
     constructor() {
         this.currentProvider = EProvider.Chainbase;
+    }
+
+    public async loadHotColdAddresses(): Promise<void> {
+        this.hotAddresses = await GooglesheetServices.getAndFilterAddressesBySheetName('HOTS');
+        this.coldAddresses = await GooglesheetServices.getAndFilterAddressesBySheetName('COLDS');
     }
 
     private async loadData({
@@ -23,7 +31,7 @@ class ExportTopholderController {
     }): Promise<void> {
         let insertDataColumns: any[] = [];
         const date = new Date();
-        const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         insertDataColumns.push([dateString]);
 
         const mergedData = AddressWithBalanceM.mergeDuplicateAddresses(chainBases);
@@ -45,21 +53,15 @@ class ExportTopholderController {
         }
 
         const differenceList = AddressWithBalanceM.findDifferenceWithExcelItem(filteredData, excelItemRows);
-
-        // if (differenceList.length > 0) {
-        //     for (const e of differenceList) {
-        //         insertDataColumns.push([e.amount.toString()]);
-        //     }
-        // }
-
+        await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
         await GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, differenceList);
+        await this.onProcessData(myToken);
 
         console.log(`loadData ${myToken.name} done`);
     }
 
     public async onExportTopHolderByDay(item: MyTokenM): Promise<void> {
         try {
-            console.log(`onExportTopHolderByDay ${item.name}`);
             const excelItemRows = await GooglesheetServices.getListAddressBySheetName(item.name);
             const temp: AddressWithBalanceM[] = [];
 
@@ -103,7 +105,7 @@ class ExportTopholderController {
 
                     shouldContinue = resp[resp.length - 1].amount >= item.minBalance;
                     // if (this.currentProvider === EProvider.Chainbase) {
-                    await new Promise((resolve) => setTimeout(resolve, 200));
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
                     // }
                     console.log(`process: ${chain.address} ${page} ${temp.length}`);
                 }
@@ -119,6 +121,47 @@ class ExportTopholderController {
         } catch (e) {
             console.log(`onExportTopHolderByDay Error: ${e}`);
             throw e;
+        }
+    }
+
+    public async onProcessData(item: MyTokenM): Promise<void> {
+        const addressesWithBalance: AddressMoreBalanceM[] = await GooglesheetServices.getAddressesMoreBalance(item.name);
+
+        const itemHotAddresses = addressesWithBalance.filter((e) => this.hotAddresses.includes(e.address));
+        const itemColdAddresses = addressesWithBalance.filter((e) => this.coldAddresses.includes(e.address));
+        const itemTrackingAddress = addressesWithBalance.filter((e) => e.isTracking);
+
+        const totalPrevousAmountHotAddresses = itemHotAddresses.reduce((acc, e) => acc + e.prevousAmount, 0);
+        const totalCurrentAmountHotAddresses = itemHotAddresses.reduce((acc, e) => acc + e.currentAmount, 0);
+
+        const totalPrevousAmountColdAddresses = itemColdAddresses.reduce((acc, e) => acc + e.prevousAmount, 0);
+        const totalCurrentAmountColdAddresses = itemColdAddresses.reduce((acc, e) => acc + e.currentAmount, 0);
+
+        const totalPrevousAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.prevousAmount, 0);
+        const totalCurrentAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.currentAmount, 0);
+
+        // const a = findDuplicates(this.hotAddresses, this.coldAddresses);
+        // for (const item of a) {
+        //     console.log(`item: ${item}`);
+        // }
+
+        // console.log(`totalPrevousAmountHotAddresses: ${totalPrevousAmountHotAddresses}`);
+        // console.log(`totalCurrentAmountHotAddresses: ${totalCurrentAmountHotAddresses}`);
+        // console.log(`totalPrevousAmountColdAddresses: ${totalPrevousAmountColdAddresses}`);
+        // console.log(`totalCurrentAmountColdAddresses: ${totalCurrentAmountColdAddresses}`);
+
+        const percentHot = calculatePercentageDifference(totalPrevousAmountHotAddresses, totalCurrentAmountHotAddresses);
+        // console.log(`percentHot: ${percentHot}`);
+
+        const percentCold = calculatePercentageDifference(totalPrevousAmountColdAddresses, totalCurrentAmountColdAddresses);
+        // console.log(`percentCold: ${percentCold}`);
+
+        const percentTracking = calculatePercentageDifference(totalPrevousAmountTrackingAddresses, totalCurrentAmountTrackingAddresses);
+        // console.log(`percentTracking: ${percentTracking}`);
+
+        if (Math.abs(percentHot) >= PERCENT_HOT_WALLET_CHECK || Math.abs(percentCold) >= PERCENT_COLD_WALLET_CHECK || Math.abs(percentTracking) >= PERCENT_TRACKING_ALLET_CHECK) {
+            const telegramService = new TelegramServices();
+            telegramService.sendMessage(escapeSpecialCharacters(`[${item.name}] Hot: ${percentHot}% Cold: ${percentCold}% Tracking: ${percentTracking}%`));
         }
     }
 }

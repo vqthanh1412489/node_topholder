@@ -117,3 +117,19 @@ export function insertZeroAfterAddress(
 
     return newArray;
 }
+
+export function calculatePercentageDifference(prevousAmount: number, currentAmount: number): number {
+    const difference = currentAmount - prevousAmount;
+    const percentageDifference = (difference / prevousAmount) * 100;
+
+    return percentageDifference;
+}
+
+export function escapeSpecialCharacters(message: string): string {
+    return message.replace(/([_*\[\]()~`>#+-=|{}.!\\])/g, '\\$1');
+}
+
+export function findDuplicates(a1, a2) {
+    const duplicates = a1.filter(item => a2.includes(item));
+    return duplicates;
+}

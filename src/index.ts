@@ -1,14 +1,14 @@
 import { AppDataSource } from "./data-source"
 import { ArkhamAddressInfo } from "./entity/address_info.entity"
 import { ArrkhamProvider, ChainbaseProvider, TronNetworkProvider, TelegramServices } from "./providers"
-import { GooglesheetServices } from './services';
+import { GooglesheetBaseServices, GooglesheetServices } from './services';
 import { ExportTopholderController } from './controllers/export_topholder.controller'
 import { myTokens } from "./utils/constants";
 const cron = require('node-cron');
 
 async function main() {
     const exportTopholderController = new ExportTopholderController();
-    // const googlesheetServices = new GooglesheetServices();
+    const googlesheetServices = new GooglesheetServices();
     // AppDataSource.initialize().then(async () => {
     //     const rows = await GooglesheetServices.getListAddressBySheetName('USDC');
 
@@ -60,10 +60,14 @@ async function main() {
     //         console.log('Connection closed')
     //     }).catch(error => console.log(error))
     // }).catch(error => console.log(error))
+    await exportTopholderController.loadHotColdAddresses();
 
+    // await exportTopholderController.onProcessData(myTokens[2])
+    // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
+    // GooglesheetBaseServices.deleteAllHidenSheet();
 
     // cron.schedule('*/30 * * * * *', async () => {
-    cron.schedule('0 7 * * *', async () => {
+    cron.schedule('0 7,14,21 * * *', async () => {
         let countItemSuccess = 0;
         for (let i = 0; i < myTokens.length; i++) {
             try {
@@ -81,6 +85,8 @@ async function main() {
         scheduled: true,
         timezone: "Asia/Ho_Chi_Minh"
     });
+    // GooglesheetServices.addNameWallet('MEME')
+    // ArrkhamProvider.getNumberOfTransactions('0xb937bf362cd897e05eb3d351575598c4f9b55839');
 }
 
 main()

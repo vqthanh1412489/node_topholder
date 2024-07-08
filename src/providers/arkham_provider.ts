@@ -42,34 +42,34 @@ export class ArrkhamProvider {
             throw new Error('Failed to load address info');
         }
     }
-    static async getNumberOfTransactions(address: string): Promise<number> {
-        try {
-            const apiUrl = `${ArrkhamProvider.apiHost}/transfers?base=${address}&timeLast=1w`;
-            const xTimestamp = Math.floor(Date.now() / 1000).toString();
-            const newDict = apiUrl.replace(ArrkhamProvider.apiHost, '').split('?')[0];
-            const dummy = `${newDict}:${xTimestamp}:${ArrkhamProvider.apiKey}`;
-            const dummyHash = createSha256Hash(dummy);
-            const payloadRaw = `${ArrkhamProvider.apiKey}:${dummyHash}`;
-            const xPayloadResult = createSha256Hash(payloadRaw);
+    // static async getNumberOfTransactions(address: string): Promise<number> {
+    //     try {
+    //         const apiUrl = `${ArrkhamProvider.apiHost}/transfers?base=${address}&timeLast=1w`;
+    //         const xTimestamp = Math.floor(Date.now() / 1000).toString();
+    //         const newDict = apiUrl.replace(ArrkhamProvider.apiHost, '').split('?')[0];
+    //         const dummy = `${newDict}:${xTimestamp}:${ArrkhamProvider.apiKey}`;
+    //         const dummyHash = createSha256Hash(dummy);
+    //         const payloadRaw = `${ArrkhamProvider.apiKey}:${dummyHash}`;
+    //         const xPayloadResult = createSha256Hash(payloadRaw);
 
-            const headers = {
-                'Origin': 'https://platform.arkhamintelligence.com',
-                'Referer': 'https://platform.arkhamintelligence.com/',
-                'X-Payload': xPayloadResult,
-                'X-Timestamp': xTimestamp,
-            };
+    //         const headers = {
+    //             'Origin': 'https://platform.arkhamintelligence.com',
+    //             'Referer': 'https://platform.arkhamintelligence.com/',
+    //             'X-Payload': xPayloadResult,
+    //             'X-Timestamp': xTimestamp,
+    //         };
 
-            const response = await axios.get<number>(apiUrl, { headers });
-            // console.log(`response: ${JSON.stringify(response.data)}`);
+    //         const response = await axios.get<number>(apiUrl, { headers });
+    //         // console.log(`response: ${JSON.stringify(response.data)}`);
 
-            if (response.status === 200) {
-                return response.data;
-            } else {
-                throw new Error('Failed to load address info');
-            }
-        } catch (e) {
-            console.log(`Error: ${e.toString()}`);
-            throw new Error('Failed to load address info');
-        }
-    }
+    //         if (response.status === 200) {
+    //             return response.data;
+    //         } else {
+    //             throw new Error('Failed to load address info');
+    //         }
+    //     } catch (e) {
+    //         console.log(`Error: ${e.toString()}`);
+    //         throw new Error('Failed to load address info');
+    //     }
+    // }
 }

@@ -52,6 +52,7 @@ class ExportTopholderController {
 
         const differenceList = AddressWithBalanceM.findDifferenceWithExcelItem(filteredData, excelItemRows);
         await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, differenceList);
         await this.onProcessData(myToken);
 

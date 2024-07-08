@@ -1,3 +1,4 @@
+const moment = require('moment-timezone');
 import { ArkhamAddressInfoM } from "../models";
 
 export function getChain(instance: ArkhamAddressInfoM): string {
@@ -132,4 +133,10 @@ export function escapeSpecialCharacters(message: string): string {
 export function findDuplicates(a1, a2) {
     const duplicates = a1.filter(item => a2.includes(item));
     return duplicates;
+}
+
+export function getCurrentTimeInBangkok() {
+    const date = moment().tz('Asia/Bangkok');
+    const dateString = `${date.date()}/${date.month() + 1}/${date.year()} ${date.hours()}:${date.minutes()}:${date.seconds()}`;
+    return dateString;
 }

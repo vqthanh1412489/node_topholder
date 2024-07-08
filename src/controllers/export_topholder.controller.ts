@@ -1,6 +1,6 @@
 import { ChainbaseProvider, TelegramServices, TronNetworkProvider } from "../providers";
 import { GooglesheetBaseServices, GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, findDuplicates, } from "../utils";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, findDuplicates, getCurrentTimeInBangkok, } from "../utils";
 import { AddressMoreBalanceM, AddressWithBalanceM, MyTokenM } from "../models";
 
 class ExportTopholderController {
@@ -30,9 +30,7 @@ class ExportTopholderController {
         myToken: MyTokenM;
     }): Promise<void> {
         let insertDataColumns: any[] = [];
-        const date = new Date();
-        const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-        insertDataColumns.push([dateString]);
+        insertDataColumns.push([getCurrentTimeInBangkok()]);
 
         const mergedData = AddressWithBalanceM.mergeDuplicateAddresses(chainBases);
         const filteredData = mergedData.filter((element) => element.amount >= myToken.minBalance);

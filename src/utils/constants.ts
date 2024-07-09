@@ -254,3 +254,5 @@ export const COLUMN_BEGIN_DATA = 5;
 export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
 export const PERCENT_TRACKING_ALLET_CHECK = 10;
+
+export const EXPORT_DAILY_MODE = true;

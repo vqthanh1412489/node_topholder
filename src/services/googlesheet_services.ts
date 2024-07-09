@@ -1,4 +1,4 @@
-import { COLUMN_BEGIN_DATA, getCommonName, googleSheetSpreadsheetId, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
+import { COLUMN_BEGIN_DATA, EXPORT_DAILY_MODE, getCommonName, googleSheetSpreadsheetId, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
 import { GooglesheetBaseServices } from "../services";
 import { ArrkhamProvider } from "../providers";
 import { AddressMoreBalanceM, AddressWithBalanceM } from "../models";
@@ -171,8 +171,9 @@ class GooglesheetServices {
             });
         }
 
-        await this.removeDataBeforePush(sheetName);
-
+        if (EXPORT_DAILY_MODE) {
+            await this.removeDataBeforePush(sheetName);
+        }
     }
 
     // static async addNameWallet(

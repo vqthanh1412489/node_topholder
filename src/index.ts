@@ -37,7 +37,7 @@ async function main() {
     await exportTopholderController.loadHotColdAddresses();
     console.log('Server is running...')
 
-    // await exportTopholderController.onProcessData(myTokens[2])
+    // await exportTopholderController.onProcessData(myTokens.find(x => x.name === 'RPL'))
     // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
     // GooglesheetBaseServices.deleteAllHidenSheet();
 

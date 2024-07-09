@@ -1,6 +1,6 @@
 import { ChainbaseProvider, TelegramServices, TronNetworkProvider } from "../providers";
 import { GooglesheetBaseServices, GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, findDuplicates, getCurrentTimeInBangkok, } from "../utils";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, EXPORT_DAILY_MODE, } from "../utils";
 import { AddressMoreBalanceM, AddressWithBalanceM, MyTokenM } from "../models";
 
 class ExportTopholderController {
@@ -51,9 +51,12 @@ class ExportTopholderController {
         }
 
         const differenceList = AddressWithBalanceM.findDifferenceWithExcelItem(filteredData, excelItemRows);
-        await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
+        if (EXPORT_DAILY_MODE) {
+            await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
+        }
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, differenceList);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         await this.onProcessData(myToken);
 
         console.log(`loadData ${myToken.name} done`);
@@ -127,7 +130,10 @@ class ExportTopholderController {
         const addressesWithBalance: AddressMoreBalanceM[] = await GooglesheetServices.getAddressesMoreBalance(item.name);
 
         const itemHotAddresses = addressesWithBalance.filter((e) => this.hotAddresses.includes(e.address));
-        const itemColdAddresses = addressesWithBalance.filter((e) => this.coldAddresses.includes(e.address));
+        const itemColdAddresses = addressesWithBalance.filter((e) => {
+            // console.log(`e.address: ${e.address}, prevousAmount ${e.prevousAmount}, currentAmount ${e.currentAmount}`);
+            return this.coldAddresses.includes(e.address.toLowerCase());
+        });
         const itemTrackingAddress = addressesWithBalance.filter((e) => e.isTracking);
 
         const totalPrevousAmountHotAddresses = itemHotAddresses.reduce((acc, e) => acc + e.prevousAmount, 0);
@@ -138,11 +144,6 @@ class ExportTopholderController {
 
         const totalPrevousAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.prevousAmount, 0);
         const totalCurrentAmountTrackingAddresses = itemTrackingAddress.reduce((acc, e) => acc + e.currentAmount, 0);
-
-        // const a = findDuplicates(this.hotAddresses, this.coldAddresses);
-        // for (const item of a) {
-        //     console.log(`item: ${item}`);
-        // }
 
         // console.log(`totalPrevousAmountHotAddresses: ${totalPrevousAmountHotAddresses}`);
         // console.log(`totalCurrentAmountHotAddresses: ${totalCurrentAmountHotAddresses}`);

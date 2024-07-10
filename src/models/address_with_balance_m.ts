@@ -1,5 +1,5 @@
 import { convertToDecimal } from '../utils';
-import { ChainbaseM, TronNetworkM } from '../models';
+import { ChainbaseM, CovalenthqM, TronNetworkM } from '../models';
 
 export class AddressWithBalanceM {
     amount: number;
@@ -30,18 +30,18 @@ export class AddressWithBalanceM {
         return addressWithBalances;
     }
 
-    // static convertCovalenthqToAddressWithBalance(covalenthqs: CovalenthqM[]): AddressWithBalanceM[] {
-    //     const addressWithBalances: AddressWithBalanceM[] = [];
+    static convertCovalenthqToAddressWithBalance(covalenthqs: CovalenthqM[]): AddressWithBalanceM[] {
+        const addressWithBalances: AddressWithBalanceM[] = [];
 
-    //     for (const item of covalenthqs) {
-    //         addressWithBalances.push(new AddressWithBalanceM({
-    //             amount: item.balance!.convertToDecimal(item.contractDecimals!),
-    //             address: item.address!,
-    //         }));
-    //     }
+        for (const item of covalenthqs) {
+            addressWithBalances.push(new AddressWithBalanceM({
+                amount: convertToDecimal(item.balance!, item.contractDecimals!),
+                address: item.address!,
+            }));
+        }
 
-    //     return addressWithBalances;
-    // }
+        return addressWithBalances;
+    }
 
     static convertTronNetworkToAddressWithBalance(tronNetworks: TronNetworkM[]): AddressWithBalanceM[] {
         const addressWithBalances: AddressWithBalanceM[] = [];

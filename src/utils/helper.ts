@@ -140,3 +140,25 @@ export function getCurrentTimeInBangkok() {
     const dateString = `${date.date()}/${date.month() + 1}/${date.year()} ${date.hours()}:${date.minutes()}:${date.seconds()}`;
     return dateString;
 }
+
+export function getMondays(startDateStr, endDateStr) {
+    const startDate = new Date(startDateStr); // Ngày bắt đầu
+    const endDate = endDateStr ? new Date(endDateStr) : new Date(); // Ngày kết thúc hoặc ngày hiện tại nếu không được cung cấp
+
+    const mondays = [];
+
+    let currentDate = startDate;
+
+    // Lặp qua các ngày từ ngày bắt đầu đến ngày kết thúc
+    while (currentDate <= endDate) {
+        // Kiểm tra nếu ngày hiện tại là thứ 2
+        if (currentDate.getDay() === 1) {
+            mondays.push(new Date(currentDate)); // Thêm ngày thứ 2 vào danh sách
+        }
+        // Tăng ngày hiện tại lên 1 ngày
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Trả về danh sách các ngày thứ 2 với định dạng năm/tháng/ngày
+    return mondays.map(date => date.toISOString().split('T')[0]);
+}

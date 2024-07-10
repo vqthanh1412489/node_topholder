@@ -249,10 +249,11 @@ export const googleSheetCredentials = {
     universe_domain: "googleapis.com"
 };
 export const googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
-// export const googleSheetSpreadsheetId = '1cp-LsXx02w8mWiGGJhnH-ETzsyqppmjw_3T5kto2cGE'; // DATA copy
+// export const googleSheetSpreadsheetId = '1vbamE6hie8BbP-7xiZhrIYpHGIHa69B2fg4upGrIq7Q'; // DATA copy
 export const COLUMN_BEGIN_DATA = 5;
 export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
 export const PERCENT_TRACKING_ALLET_CHECK = 10;
 
 export const EXPORT_DAILY_MODE = true;
+export const START_TIME = new Date('2022-11-20');

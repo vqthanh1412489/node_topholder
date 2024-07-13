@@ -1,7 +1,7 @@
 import { ChainbaseProvider, CovalenthqProvider, TelegramServices, TronNetworkProvider } from "../providers";
 import { GooglesheetBaseServices, GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, EXPORT_DAILY_MODE, mapENetworkToCovalentProvider, } from "../utils";
-import { AddressMoreBalanceM, AddressWithBalanceM, MyTokenM } from "../models";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_TRACKING_ALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, mapENetworkToCovalentProvider, EWalletType, APP_MODE, EAppMode, findDifferenceWithExcelItem, } from "../utils";
+import { AddressMoreBalanceM, AddressWithBalanceM, MAddressBalanceWithType, MyTokenM } from "../models";
 
 class ExportTopholderController {
     private currentProvider: EProvider;
@@ -15,7 +15,7 @@ class ExportTopholderController {
     private selectedDate = new Date().toISOString();
 
     constructor() {
-        this.currentProvider = EXPORT_DAILY_MODE ? EProvider.Chainbase : EProvider.Covalenthq;
+        this.currentProvider = APP_MODE === EAppMode.HISTORY ? EProvider.Covalenthq : EProvider.Chainbase;
     }
 
     public setSelectDate(date: string): void {
@@ -37,10 +37,10 @@ class ExportTopholderController {
         myToken: MyTokenM;
     }): Promise<void> {
         let insertDataColumns: any[] = [];
-        if (EXPORT_DAILY_MODE) {
-            insertDataColumns.push([getCurrentTimeInBangkok()]);
-        } else {
+        if (APP_MODE === EAppMode.HISTORY) {
             insertDataColumns.push([this.selectedDate]);
+        } else {
+            insertDataColumns.push([getCurrentTimeInBangkok()]);
         }
 
         const mergedData = AddressWithBalanceM.mergeDuplicateAddresses(chainBases);
@@ -61,11 +61,11 @@ class ExportTopholderController {
             }
         }
 
-        const differenceList = AddressWithBalanceM.findDifferenceWithExcelItem(filteredData, excelItemRows);
+        const differenceList = findDifferenceWithExcelItem(filteredData, excelItemRows);
         await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         await GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, differenceList);
-        if (EXPORT_DAILY_MODE) {
+        if (APP_MODE === EAppMode.DAILY) {
             await new Promise((resolve) => setTimeout(resolve, 3000));
             await this.onProcessData(myToken);
         }
@@ -119,7 +119,7 @@ class ExportTopholderController {
                     if (this.currentProvider === EProvider.Chainbase) {
                         await new Promise((resolve) => setTimeout(resolve, 1000));
                     }
-                    console.log(`process: ${chain.address} ${page} ${temp.length}`);
+                    // console.log(`process: ${chain.address} ${page} ${temp.length}`);
                 }
             }
 
@@ -173,6 +173,58 @@ class ExportTopholderController {
             const telegramService = new TelegramServices();
             telegramService.sendMessage(escapeSpecialCharacters(`[${item.name}] Hot: ${percentHot}% Cold: ${percentCold}% Tracking: ${percentTracking}%`));
         }
+    }
+
+    public async onAnalysisHistoryData(sheetName: string): Promise<void> {
+        const value = []
+        value.push(['Date', 'Hot', 'Cold', 'MM', 'Child', 'Lock', 'Stacking', 'Dev']);
+        const matrixData = await GooglesheetBaseServices.getDatasBySheetName(sheetName);
+
+        for (let k = 3; k < matrixData[0].length; k++) {
+            let colIndex = k;
+            const addressBalanceWithTypes: MAddressBalanceWithType[] = [];
+            for (let rowIndex = 1; rowIndex < matrixData.length; rowIndex++) {
+                const address = matrixData[rowIndex][1];
+                const type = matrixData[rowIndex][2];
+                const amount = matrixData[rowIndex][colIndex] !== '' && matrixData[rowIndex][colIndex] ? parseFloat(matrixData[rowIndex][colIndex]) : 0;
+                addressBalanceWithTypes.push({ address, amount, type });
+            }
+
+            // console.log(addressBalanceWithTypes);
+            const hotItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.HOT);
+            const coldItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.COLD);
+            const mmItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.MM);
+            const childItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.CHILD);
+            const lockItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.LOCK);
+            const stackingItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.STACKING);
+            const devItems = addressBalanceWithTypes.filter((e) => e.type === EWalletType.DEV);
+
+            // console.log('hotItems', hotItems)
+
+            const totalHotItems = hotItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalColdItems = coldItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalMMItems = mmItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalChildItems = childItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalLockItems = lockItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalStackingItems = stackingItems.reduce((acc, e) => acc + e.amount, 0);
+            const totalDevItems = devItems.reduce((acc, e) => acc + e.amount, 0);
+
+            // console.log(`totalHotItems: ${totalHotItems}`);
+            // console.log(`totalColdItems: ${totalColdItems}`);
+
+            value.push([
+                matrixData[0][colIndex],
+                totalHotItems,
+                totalColdItems,
+                totalMMItems,
+                totalChildItems,
+                totalLockItems,
+                totalStackingItems,
+                totalDevItems,
+            ]);
+        }
+        // console.log(value);
+        GooglesheetBaseServices.insertValueByRangeStartAtA1('0x0_CHART', value);
     }
 }
 

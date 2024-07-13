@@ -132,7 +132,26 @@ class GooglesheetBaseServices {
                 console.log(`${result} cells appended.`);
             }
         });
-    
+
+    }
+
+    static async insertValueByRangeStartAtA1(sheetName: string, values: any): Promise<void> {
+        const resource = {
+            values,
+        };
+
+        GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
+            spreadsheetId: googleSheetSpreadsheetId,
+            range: `${sheetName}!A1`,
+            valueInputOption: 'USER_ENTERED',
+            resource,
+        }, (err, result) => {
+            if (err) {
+                console.log('The API returned an error: ' + err);
+            } else {
+                console.log(`${result} cells appended.`);
+            }
+        });
     }
 }
 

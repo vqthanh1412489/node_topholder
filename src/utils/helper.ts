@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-import { ArkhamAddressInfoM } from "../models";
+import { AddressWithBalanceM, ArkhamAddressInfoM } from "../models";
 
 export function getChain(instance: ArkhamAddressInfoM): string {
     return instance.chain || '';
@@ -161,4 +161,38 @@ export function getMondays(startDateStr, endDateStr) {
 
     // Trả về danh sách các ngày thứ 2 với định dạng năm/tháng/ngày
     return mondays.map(date => date.toISOString().split('T')[0]);
+}
+
+export function getColumnName(columnIndex) {
+    let columnName = '';
+    while (columnIndex >= 0) {
+        columnName = String.fromCharCode((columnIndex % 26) + 65) + columnName;
+        columnIndex = Math.floor(columnIndex / 26) - 1;
+    }
+    return columnName;
+}
+
+export function findDifferenceWithExcelItem(addressWithBalances: AddressWithBalanceM[], arrayExcel: string[]): AddressWithBalanceM[] {
+    const differenceListResult: AddressWithBalanceM[] = [];
+
+    for (const item of addressWithBalances) {
+        let found = false;
+
+        for (const excelItem of arrayExcel) {
+            const excelAddress = excelItem;
+            if (item && item.address && excelAddress) {
+                if (item.address.toLowerCase() === excelAddress.toLowerCase()) {
+                    found = true;
+                    break;
+                }
+            }
+
+        }
+
+        if (!found) {
+            differenceListResult.push(item);
+        }
+    }
+
+    return differenceListResult;
 }

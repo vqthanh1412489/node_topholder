@@ -58,30 +58,30 @@ export class AddressWithBalanceM {
         return addressWithBalances;
     }
 
-    static findDifferenceWithExcelItem(addressWithBalances: AddressWithBalanceM[], arrayExcel: string[]): AddressWithBalanceM[] {
-        const differenceListResult: AddressWithBalanceM[] = [];
+    // static findDifferenceWithExcelItem(addressWithBalances: AddressWithBalanceM[], arrayExcel: string[]): AddressWithBalanceM[] {
+    //     const differenceListResult: AddressWithBalanceM[] = [];
 
-        for (const item of addressWithBalances) {
-            let found = false;
+    //     for (const item of addressWithBalances) {
+    //         let found = false;
 
-            for (const excelItem of arrayExcel) {
-                const excelAddress = excelItem;
-                if (item && item.address && excelAddress) {
-                    if (item.address.toLowerCase() === excelAddress.toLowerCase()) {
-                        found = true;
-                        break;
-                    }
-                }
+    //         for (const excelItem of arrayExcel) {
+    //             const excelAddress = excelItem;
+    //             if (item && item.address && excelAddress) {
+    //                 if (item.address.toLowerCase() === excelAddress.toLowerCase()) {
+    //                     found = true;
+    //                     break;
+    //                 }
+    //             }
 
-            }
+    //         }
 
-            if (!found) {
-                differenceListResult.push(item);
-            }
-        }
+    //         if (!found) {
+    //             differenceListResult.push(item);
+    //         }
+    //     }
 
-        return differenceListResult;
-    }
+    //     return differenceListResult;
+    // }
 
     static mergeDuplicateAddresses(addressWithBalances: AddressWithBalanceM[]): AddressWithBalanceM[] {
         const uniqueAddresses: { [key: string]: AddressWithBalanceM } = {};

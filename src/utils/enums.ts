@@ -35,3 +35,20 @@ export enum EProvider {
     Chainbase = 'Chainbase',
     Covalenthq = 'Covalenthq',
 }
+
+export enum EWalletType {
+    COLD = "cold",
+    HOT = "hot",
+    MM = "mm",
+    CHILD = "child",
+    LOCK = "lock",
+    STACKING = "stacking",
+    DEV = "dev"
+}
+
+export enum EAppMode {
+    DAILY = "daily",
+    HISTORY = "history",
+    ANALYSIS_HISTORY = "analysis_history",
+    TEST = "test",
+}

@@ -1,4 +1,4 @@
-import { ENetwork } from "./enums";
+import { EAppMode, ENetwork } from "./enums";
 import { MyTokenM } from "../models/my_token_m";
 import { AddressByChainM } from "../models/address_by_chain_m";
 
@@ -195,16 +195,16 @@ export const myTokens: MyTokenM[] = [
         ],
         minBalance: 50000,
     }),
-    // new MyTokenM({
-    //     name: '0x0',
-    //     chains: [
-    //         new AddressByChainM({
-    //             eNetwork: ENetwork.Ethereum,
-    //             address: '0x5a3e6A77ba2f983eC0d371ea3B475F8Bc0811AD5',
-    //         }),
-    //     ],
-    //     minBalance: 10000,
-    // }),
+    new MyTokenM({
+        name: '0x0',
+        chains: [
+            new AddressByChainM({
+                eNetwork: ENetwork.Ethereum,
+                address: '0x5a3e6A77ba2f983eC0d371ea3B475F8Bc0811AD5',
+            }),
+        ],
+        minBalance: 10000,
+    }),
     // new MyTokenM({
     //     name: 'ARB',
     //     chains: [
@@ -248,12 +248,11 @@ export const googleSheetCredentials = {
     client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/flutterarkham1%40flutterarkham.iam.gserviceaccount.com",
     universe_domain: "googleapis.com"
 };
-export const googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
-// export const googleSheetSpreadsheetId = '1vbamE6hie8BbP-7xiZhrIYpHGIHa69B2fg4upGrIq7Q'; // DATA copy
+// export const googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
+export const googleSheetSpreadsheetId = '1vbamE6hie8BbP-7xiZhrIYpHGIHa69B2fg4upGrIq7Q'; // DATA copy
 export const COLUMN_BEGIN_DATA = 5;
 export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
 export const PERCENT_TRACKING_ALLET_CHECK = 10;
 
-export const EXPORT_DAILY_MODE = true;
-export const START_TIME = new Date('2022-11-20');
+export const APP_MODE: EAppMode = EAppMode.HISTORY;

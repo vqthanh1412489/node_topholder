@@ -2,8 +2,8 @@ import { AppDataSource } from "./data-source"
 import { ArrkhamProvider, TelegramServices } from "./providers"
 import { GooglesheetBaseServices, GooglesheetServices } from './services';
 import { ExportTopholderController } from './controllers/export_topholder.controller'
-import { EXPORT_DAILY_MODE, myTokens, START_TIME } from "./utils/constants";
-import { getCommonName, getMondays } from "./utils";
+import { APP_MODE, myTokens } from "./utils/constants";
+import { EAppMode, getCommonName, getMondays } from "./utils";
 const cron = require('node-cron');
 
 async function main() {
@@ -39,30 +39,41 @@ async function main() {
     // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
     // GooglesheetBaseServices.deleteAllHidenSheet();
     // GooglesheetServices.addNameWallet('MEME')
-    console.log('Server is running with mode: ', EXPORT_DAILY_MODE ? 'Daily' : 'History')
-    if (EXPORT_DAILY_MODE) {
-        await exportTopholderController.loadHotColdAddresses();
-        cron.schedule('0 7,14,21 * * *', async () => {
-            for (let i = 0; i < myTokens.length; i++) {
-                try {
-                    await exportTopholderController.onExportTopHolderByDay(myTokens[i])
-                } catch (error) {
-                    console.log(`Error: ${error.toString()}`)
-                    telegramService.sendMessage(`Error ${error.toString()}`);
-                    break
+    console.log('Server is running: ', APP_MODE)
+    switch (APP_MODE) {
+        case EAppMode.DAILY:
+            await exportTopholderController.loadHotColdAddresses();
+            cron.schedule('0 7,14,21 * * *', async () => {
+                for (let i = 0; i < myTokens.length; i++) {
+                    try {
+                        await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+                    } catch (error) {
+                        console.log(`Error: ${error.toString()}`)
+                        telegramService.sendMessage(`Error ${error.toString()}`);
+                        break
+                    }
                 }
+            }, {
+                scheduled: true,
+                timezone: "Asia/Ho_Chi_Minh"
+            });
+            break;
+        case EAppMode.HISTORY:
+            const START_TIME = new Date('2024-02-13');
+            const dates = getMondays(START_TIME, new Date().toISOString());
+            for (let i = 0; i < dates.length; i++) {
+                exportTopholderController.setSelectDate(dates[i]);
+                await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === '0x0'))
+                //delay 2 second
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
-        }, {
-            scheduled: true,
-            timezone: "Asia/Ho_Chi_Minh"
-        });
-    } else {
-        const dates = getMondays(START_TIME, new Date().toISOString());
-        for (let i = 0; i < dates.length; i++) {
-            console.log(dates[i])
-            exportTopholderController.setSelectDate(dates[i]);
-            await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
-        }
+            break;
+        case EAppMode.ANALYSIS_HISTORY:
+            exportTopholderController.onAnalysisHistoryData('Copy of 0x0_HISTORY');
+            break;
+        default:
+            console.log('Invalid mode')
+            break;
     }
     // const arkhamAddressInfoM = await ArrkhamProvider.getAddressLabel('0x8144c696ee8e124ea7b05c8ca69f736787c71bd7');
     // const entityName = getCommonName(arkhamAddressInfoM);

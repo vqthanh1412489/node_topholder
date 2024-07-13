@@ -7,4 +7,5 @@ export * from './tron_network_m';
 export * from './arkham_address_info_m';
 export * from './address_more_balance_m';
 export * from './covalenthq_m';
+export * from './m_address_balance_with_type';
 

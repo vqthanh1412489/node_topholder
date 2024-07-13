@@ -1,4 +1,4 @@
-import { COLUMN_BEGIN_DATA, EXPORT_DAILY_MODE, getCommonName, googleSheetSpreadsheetId, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
+import { APP_MODE, COLUMN_BEGIN_DATA, EAppMode, getColumnName, getCommonName, googleSheetSpreadsheetId, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
 import { GooglesheetBaseServices } from "../services";
 import { ArrkhamProvider } from "../providers";
 import { AddressMoreBalanceM, AddressWithBalanceM } from "../models";
@@ -11,6 +11,7 @@ class GooglesheetServices {
         });
 
         const rows = response.data.values.map(row => row[0]);
+        console.log('getListAddressBySheetName', rows);
         return rows
     }
 
@@ -116,7 +117,7 @@ class GooglesheetServices {
         const lastColumn = response.data.values[0].length;
         // console.log(`lastColumn ${lastColumn}`)
 
-        const range = `${sheetName}!${String.fromCharCode(65 + lastColumn)}1`;
+        const range = `${sheetName}!${getColumnName(lastColumn)}1`;
         const resource = {
             values,
         };
@@ -171,7 +172,7 @@ class GooglesheetServices {
             });
         }
 
-        if (EXPORT_DAILY_MODE) {
+        if (APP_MODE === EAppMode.DAILY) {
             await this.removeDataBeforePush(sheetName);
         }
     }

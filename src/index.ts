@@ -59,11 +59,11 @@ async function main() {
             });
             break;
         case EAppMode.HISTORY:
-            const START_TIME = new Date('2024-02-13');
+            const START_TIME = new Date('2022-03-19');
             const dates = getMondays(START_TIME, new Date().toISOString());
             for (let i = 0; i < dates.length; i++) {
                 exportTopholderController.setSelectDate(dates[i]);
-                await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === '0x0'))
+                await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'APE'))
                 //delay 2 second
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }

@@ -11,7 +11,7 @@ class GooglesheetServices {
         });
 
         const rows = response.data.values.map(row => row[0]);
-        console.log('getListAddressBySheetName', rows);
+        // console.log('getListAddressBySheetName', rows);
         return rows
     }
 

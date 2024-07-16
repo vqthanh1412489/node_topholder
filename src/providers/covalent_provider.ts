@@ -16,7 +16,7 @@ export class CovalenthqProvider {
             console.log('endPoint:', endPoint);
 
             const response = await axios.get(endPoint);
-            console.log('response:', response.data);
+            // console.log('response:', response.data);
 
             if (response.status === 200 && response.data['error'] === false && response.data['data'] !== null) {
                 // const data = response.data['data']['items'].map(item => CovalenthqM.fromJson(item));

@@ -1,4 +1,4 @@
-import { AddressWithBalanceM, CovalenthqM } from "../models";
+import { CovalenthqM } from "../models";
 
 const axios = require('axios');
 
@@ -10,7 +10,7 @@ export class CovalenthqProvider {
     //     '2gE09iWSfjeKzAOyQWPs1cnDokA', // vqthanh10
     // ];
 
-    async getTopTokenHolders({ chainName, tokenAddress, pageNumber, date }): Promise<AddressWithBalanceM[]> {
+    async getTopTokenHolders({ chainName, tokenAddress, pageNumber, date }): Promise<CovalenthqM> {
         try {
             const endPoint = `${this.baseUrl}${chainName}/tokens/${tokenAddress}/token_holders_v2/?key=cqt_rQyf3B49dYW74kPfbbGhVtX3VwwW&page-number=${pageNumber}&page-size=100&date=${date}`;
             console.log('endPoint:', endPoint);
@@ -18,9 +18,9 @@ export class CovalenthqProvider {
             const response = await axios.get(endPoint);
             // console.log('response:', response.data);
 
-            if (response.status === 200 && response.data) {
-                const data = response.data['data']['items'].map(item => CovalenthqM.fromJson(item));
-                return AddressWithBalanceM.convertCovalenthqToAddressWithBalance(data);
+            if (response.status === 200 && response.data['error'] === false && response.data['data'] !== null) {
+                // const data = response.data['data']['items'].map(item => CovalenthqM.fromJson(item));
+                return response.data
             }
 
             throw new Error(`CovalenthqM token/top-holders Error: ${response.data}`);

@@ -1,25 +1,24 @@
-import { convertToDecimal } from '../utils';
-import { ChainbaseM, TronNetworkM } from '../models';
+import { EWalletType } from "../utils";
 
 export class AddressMoreBalanceM {
     address: string;
     prevousAmount: number;
     currentAmount: number;
-    isTracking: boolean = false;
+    type: EWalletType;
 
-    constructor({ address, prevousAmount, currentAmount, isTracking }: { address: string; prevousAmount: number; currentAmount: number; isTracking?: boolean }) {
+    constructor({ address, prevousAmount, currentAmount, type }: { address: string; prevousAmount: number; currentAmount: number; type?: EWalletType }) {
         this.address = address;
         this.prevousAmount = prevousAmount;
         this.currentAmount = currentAmount;
-        this.isTracking = isTracking || false;
+        this.type = type;
     }
 
-    static fromJson(json: any): AddressMoreBalanceM {
-        return new AddressMoreBalanceM({
-            address: json['address'],
-            prevousAmount: parseFloat(json['prevousAmount']),
-            currentAmount: parseFloat(json['currentAmount']),
-            isTracking: json['isTracking'],
-        });
-    }
+    // static fromJson(json: any): AddressMoreBalanceM {
+    //     return new AddressMoreBalanceM({
+    //         address: json['address'],
+    //         prevousAmount: parseFloat(json['prevousAmount']),
+    //         currentAmount: parseFloat(json['currentAmount']),
+    //         type: json['isTracking'],
+    //     });
+    // }
 }

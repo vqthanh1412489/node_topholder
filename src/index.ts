@@ -1,9 +1,9 @@
-import { AppDataSource } from "./data-source"
 import { ArrkhamProvider, TelegramServices } from "./providers"
 import { GooglesheetBaseServices, GooglesheetServices } from './services';
 import { ExportTopholderController } from './controllers/export_topholder.controller'
 import { APP_MODE, myTokens } from "./utils/constants";
-import { EAppMode, getCommonName, getMondays } from "./utils";
+import { EAppMode, escapeSpecialCharacters, getMondays } from "./utils";
+import googleSheetSingleton from './singletons/app_config_singleton';
 const cron = require('node-cron');
 
 async function main() {
@@ -42,14 +42,32 @@ async function main() {
     console.log('Server is running: ', APP_MODE)
     switch (APP_MODE) {
         case EAppMode.DAILY:
-            await exportTopholderController.loadHotColdAddresses();
-            cron.schedule('0 7,14,21 * * *', async () => {
+            // cron.schedule('5,8 16 * * *', async () => {
+            cron.schedule('0 7 * * *', async () => {
+                googleSheetSingleton.setGoogleSheetSpreadsheetId('1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I');// DATA
                 for (let i = 0; i < myTokens.length; i++) {
                     try {
                         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
                     } catch (error) {
                         console.log(`Error: ${error.toString()}`)
-                        telegramService.sendMessage(`Error ${error.toString()}`);
+                        telegramService.sendMessage(escapeSpecialCharacters(`Error ${error.toString()}`));
+                        break
+                    }
+                }
+            }, {
+                scheduled: true,
+                timezone: "Asia/Ho_Chi_Minh"
+            });
+
+            // cron.schedule('6,7 16 * * *', async () => {
+            cron.schedule('0 8,14,21 * * *', async () => {
+                googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
+                for (let i = 0; i < myTokens.length; i++) {
+                    try {
+                        await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+                    } catch (error) {
+                        console.log(`Error: ${error.toString()}`)
+                        telegramService.sendMessage(escapeSpecialCharacters(`Error ${error.toString()}`));
                         break
                     }
                 }
@@ -69,7 +87,21 @@ async function main() {
             }
             break;
         case EAppMode.ANALYSIS_HISTORY:
-            exportTopholderController.onAnalysisHistoryData('Copy of 0x0_HISTORY');
+            exportTopholderController.onAnalysisHistoryData('0x0', '0x0_CHART');
+            break;
+        case EAppMode.TEST:
+            googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
+            // exportTopholderController.calculateMeanDifference(myTokens.find(x => x.name === 'HOOK'));
+            // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
+            for (let i = 0; i < myTokens.length; i++) {
+                try {
+                    await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+                } catch (error) {
+                    console.log(`Error: ${error.toString()}`)
+                    telegramService.sendMessage(`Error ${error.toString()}`);
+                    break
+                }
+            }
             break;
         default:
             console.log('Invalid mode')

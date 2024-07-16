@@ -9,14 +9,3 @@ export interface MAddressBalanceWithType {
     amount: number;
     type: string;
 }
-
-// Converts JSON strings to/from your types
-export class Convert {
-    public static toMAddressBalanceWithType(json: string): MAddressBalanceWithType {
-        return JSON.parse(json);
-    }
-
-    public static mAddressBalanceWithTypeToJson(value: MAddressBalanceWithType): string {
-        return JSON.stringify(value);
-    }
-}

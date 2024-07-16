@@ -37,18 +37,19 @@ export enum EProvider {
 }
 
 export enum EWalletType {
-    COLD = "cold",
-    HOT = "hot",
-    MM = "mm",
-    CHILD = "child",
-    LOCK = "lock",
-    STACKING = "stacking",
-    DEV = "dev"
+    cold = 'cold',
+    hot = 'hot',
+    mm = 'mm',
+    child = 'child',
+    lock = 'lock',
+    stack = 'stack',
+    dev = 'dev',
+    new = 'new',
 }
 
 export enum EAppMode {
-    DAILY = "daily",
-    HISTORY = "history",
-    ANALYSIS_HISTORY = "analysis_history",
-    TEST = "test",
+    DAILY,
+    HISTORY,
+    ANALYSIS_HISTORY,
+    TEST,
 }

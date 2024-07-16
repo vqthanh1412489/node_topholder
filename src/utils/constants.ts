@@ -3,16 +3,6 @@ import { MyTokenM } from "../models/my_token_m";
 import { AddressByChainM } from "../models/address_by_chain_m";
 
 export const myTokens: MyTokenM[] = [
-    // new MyTokenM({
-    //     name: 'AMP',
-    //     chains: [
-    //         new AddressByChainM({
-    //             eNetwork: ENetwork.Ethereum,
-    //             address: '0xff20817765cb7f73d4bde2e66e067e58d11095c2',
-    //         }),
-    //     ],
-    //     minBalance: 1000000,
-    // }),
     new MyTokenM({
         name: 'USDT',
         chains: [
@@ -149,30 +139,6 @@ export const myTokens: MyTokenM[] = [
         ],
         minBalance: 500000,
     }),
-    // new MyTokenM({
-    //     name: 'PDA',
-    //     chains: [
-    //         new AddressByChainM({
-    //             eNetwork: ENetwork.Ethereum,
-    //             address: '0x0d3cbed3f69ee050668adf3d9ea57241cba33a2b',
-    //         }),
-    //     ],
-    //     minBalance: 5000,
-    // }),
-    // new MyTokenM({
-    //     name: 'MAVIA',
-    //     chains: [
-    //         new AddressByChainM({
-    //             eNetwork: ENetwork.Ethereum,
-    //             address: '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
-    //         }),
-    //         new AddressByChainM({
-    //             eNetwork: ENetwork.Base,
-    //             address: '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
-    //         }),
-    //     ],
-    //     minBalance: 1000,
-    // }),
     new MyTokenM({
         name: 'CRV',
         chains: [
@@ -195,16 +161,16 @@ export const myTokens: MyTokenM[] = [
         ],
         minBalance: 50000,
     }),
-    new MyTokenM({
-        name: '0x0',
-        chains: [
-            new AddressByChainM({
-                eNetwork: ENetwork.Ethereum,
-                address: '0x5a3e6A77ba2f983eC0d371ea3B475F8Bc0811AD5',
-            }),
-        ],
-        minBalance: 10000,
-    }),
+    // new MyTokenM({
+    //     name: '0x0',
+    //     chains: [
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Ethereum,
+    //             address: '0x5a3e6A77ba2f983eC0d371ea3B475F8Bc0811AD5',
+    //         }),
+    //     ],
+    //     minBalance: 10000,
+    // }),
     // new MyTokenM({
     //     name: 'ARB',
     //     chains: [
@@ -233,6 +199,40 @@ export const myTokens: MyTokenM[] = [
     //     ],
     //     minBalance: 5000,
     // }),
+    // new MyTokenM({
+    //     name: 'AMP',
+    //     chains: [
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Ethereum,
+    //             address: '0xff20817765cb7f73d4bde2e66e067e58d11095c2',
+    //         }),
+    //     ],
+    //     minBalance: 1000000,
+    // }),
+    // new MyTokenM({
+    //     name: 'PDA',
+    //     chains: [
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Ethereum,
+    //             address: '0x0d3cbed3f69ee050668adf3d9ea57241cba33a2b',
+    //         }),
+    //     ],
+    //     minBalance: 5000,
+    // }),
+    // new MyTokenM({
+    //     name: 'MAVIA',
+    //     chains: [
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Ethereum,
+    //             address: '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
+    //         }),
+    //         new AddressByChainM({
+    //             eNetwork: ENetwork.Base,
+    //             address: '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
+    //         }),
+    //     ],
+    //     minBalance: 1000,
+    // }),
 ];
 
 export const googleSheetCredentials = {
@@ -249,10 +249,10 @@ export const googleSheetCredentials = {
     universe_domain: "googleapis.com"
 };
 // export const googleSheetSpreadsheetId = '1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I'; // DATA
-export const googleSheetSpreadsheetId = '1vbamE6hie8BbP-7xiZhrIYpHGIHa69B2fg4upGrIq7Q'; // DATA copy
+// export const googleSheetSpreadsheetId = '1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4'; // TEST
 export const COLUMN_BEGIN_DATA = 5;
 export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
-export const PERCENT_TRACKING_ALLET_CHECK = 10;
+export const PERCENT_MM_WALLET_CHECK = 10;
 
-export const APP_MODE: EAppMode = EAppMode.HISTORY;
+export const APP_MODE: EAppMode = EAppMode.DAILY;

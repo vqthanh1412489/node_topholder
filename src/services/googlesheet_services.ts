@@ -1,12 +1,13 @@
-import { APP_MODE, COLUMN_BEGIN_DATA, EAppMode, getColumnName, getCommonName, googleSheetSpreadsheetId, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
+import { APP_MODE, COLUMN_BEGIN_DATA, EAppMode, EWalletType, getColumnName, getCommonName, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
 import { GooglesheetBaseServices } from "../services";
 import { ArrkhamProvider } from "../providers";
 import { AddressMoreBalanceM, AddressWithBalanceM } from "../models";
+import appConfigSingleton from '../singletons/app_config_singleton';
 
 class GooglesheetServices {
     static async getListAddressBySheetName(sheetName: string): Promise<string[]> {
         const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!B2:B`,
         });
 
@@ -17,7 +18,7 @@ class GooglesheetServices {
 
     static async getAndFilterAddressesBySheetName(sheetName: string): Promise<string[]> {
         const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!B2:B`,
         });
 
@@ -33,9 +34,9 @@ class GooglesheetServices {
             const item = response[i];
             result.push({
                 address: item[1],
-                prevousAmount: parseFloat(item[item.length - 2]),
-                currentAmount: parseFloat(item[item.length - 1]),
-                isTracking: item[3] === '1',
+                prevousAmount: parseFloat(item[6]),
+                currentAmount: parseFloat(item[7]),
+                type: EWalletType[item[3]],
             });
         }
         // console.log('getAddressesMoreBalance result', result);
@@ -61,7 +62,7 @@ class GooglesheetServices {
         }
         const sheetId = await GooglesheetBaseServices.getSheetIdBySheetName(sheetName);
         GooglesheetBaseServices.getSheetsInstance().spreadsheets.batchUpdate({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             resource: {
                 requests: [
                     {
@@ -91,7 +92,7 @@ class GooglesheetServices {
         };
 
         GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!C1`,
             valueInputOption: 'USER_ENTERED',
             resource,
@@ -110,7 +111,7 @@ class GooglesheetServices {
         differenceList: AddressWithBalanceM[] = [],
     ): Promise<void> {
         const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!1:1`, // Lấy dữ liệu từ hàng đầu tiên
         });
 
@@ -122,7 +123,7 @@ class GooglesheetServices {
             values,
         };
         await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range,
             valueInputOption: 'USER_ENTERED',
             resource,
@@ -130,7 +131,7 @@ class GooglesheetServices {
             if (err) {
                 console.log('The API returned an error: ' + err);
             } else {
-                console.log(`${result} cells appended.`);
+                // console.log(`${result} cells appended.`);
             }
         });
 
@@ -159,7 +160,7 @@ class GooglesheetServices {
             };
 
             await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.append({
-                spreadsheetId: googleSheetSpreadsheetId,
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
                 range: `${sheetName}!A1`,
                 valueInputOption: 'USER_ENTERED',
                 resource,
@@ -167,7 +168,7 @@ class GooglesheetServices {
                 if (err) {
                     console.log('The API returned an error: ' + err);
                 } else {
-                    console.log(`${result.data.updates.updatedCells} cells appended.`);
+                    // console.log(`${result.data.updates.updatedCells} cells appended.`);
                 }
             });
         }
@@ -198,7 +199,7 @@ class GooglesheetServices {
     //         values,
     //     };
     //     GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-    //         spreadsheetId: googleSheetSpreadsheetId,
+    //         spreadsheetId: googleSheetSingleton.getGoogleSheetSpreadsheetId(),
     //         range,
     //         valueInputOption: 'USER_ENTERED',
     //         resource,

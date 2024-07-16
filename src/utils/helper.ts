@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-import { AddressWithBalanceM, ArkhamAddressInfoM } from "../models";
+import { AddressWithBalanceM, ArkhamAddressInfoM, ChainbaseM, CovalenthqM, TronNetworkM } from "../models";
 
 export function getChain(instance: ArkhamAddressInfoM): string {
     return instance.chain || '';
@@ -123,7 +123,7 @@ export function calculatePercentageDifference(prevousAmount: number, currentAmou
     const difference = currentAmount - prevousAmount;
     const percentageDifference = (difference / prevousAmount) * 100;
 
-    return percentageDifference;
+    return parseFloat(percentageDifference.toFixed(2));
 }
 
 export function escapeSpecialCharacters(message: string): string {
@@ -173,7 +173,7 @@ export function getColumnName(columnIndex) {
 }
 
 export function findDifferenceWithExcelItem(addressWithBalances: AddressWithBalanceM[], arrayExcel: string[]): AddressWithBalanceM[] {
-    const differenceListResult: AddressWithBalanceM[] = [];
+    const result: AddressWithBalanceM[] = [];
 
     for (const item of addressWithBalances) {
         let found = false;
@@ -190,9 +190,55 @@ export function findDifferenceWithExcelItem(addressWithBalances: AddressWithBala
         }
 
         if (!found) {
-            differenceListResult.push(item);
+            result.push(item);
         }
     }
 
-    return differenceListResult;
+    return result;
+}
+
+export function convertChainbaseToAddressWithBalance(chainBases: ChainbaseM): AddressWithBalanceM[] {
+    return chainBases.data.map(chainBase => new AddressWithBalanceM({
+        amount: Math.floor(parseInt(chainBase.amount)),
+        address: chainBase.wallet_address,
+    }));
+}
+
+export function convertCovalenthqToAddressWithBalance(covalenthqs: CovalenthqM): AddressWithBalanceM[] {
+    return covalenthqs.data.items.map(covalenthq => new AddressWithBalanceM({
+        amount: convertToDecimal(covalenthq.balance, covalenthq.contract_decimals),
+        address: covalenthq.address,
+    }));
+}
+
+export function convertTronNetworkToAddressWithBalance(tronNetworks: TronNetworkM[]): AddressWithBalanceM[] {
+    const addressWithBalances: AddressWithBalanceM[] = [];
+
+    // console.log('convertTronNetworkToAddressWithBalance: ', tronNetworks);
+
+    for (const item of tronNetworks) {
+        addressWithBalances.push(new AddressWithBalanceM({
+            amount: convertToDecimal(item.amount!, 6),
+            address: item.address!,
+        }));
+    }
+
+    return addressWithBalances;
+}
+
+export function mergeDuplicateAddresses(addressWithBalances: AddressWithBalanceM[]): AddressWithBalanceM[] {
+    const uniqueAddresses: { [key: string]: AddressWithBalanceM } = {};
+
+    for (const item of addressWithBalances) {
+        const address = item.address;
+        const amount = item.amount;
+
+        if (uniqueAddresses.hasOwnProperty(address)) {
+            uniqueAddresses[address].amount += amount;
+        } else {
+            uniqueAddresses[address] = item;
+        }
+    }
+
+    return Object.values(uniqueAddresses);
 }

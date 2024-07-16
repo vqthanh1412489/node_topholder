@@ -1,6 +1,6 @@
 const { google } = require('googleapis');
-import { googleSheetCredentials, googleSheetSpreadsheetId } from '../utils';
-
+import { googleSheetCredentials } from '../utils';
+import appConfigSingleton from '../singletons/app_config_singleton';
 
 const client = new google.auth.JWT(
     googleSheetCredentials.client_email,
@@ -17,7 +17,7 @@ class GooglesheetBaseServices {
     static async getSheetIdBySheetName(sheetName: string): Promise<string[]> {
         const sheets = google.sheets({ version: 'v4', auth: client });
         const response = await sheets.spreadsheets.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
         });
 
         const sheet = response.data.sheets.find(sheet => sheet.properties.title === sheetName);
@@ -27,7 +27,7 @@ class GooglesheetBaseServices {
     static async getDatasBySheetName(sheetName: string): Promise<string[][]> {
         const sheets = google.sheets({ version: 'v4', auth: client });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: sheetName,
         });
 
@@ -37,7 +37,7 @@ class GooglesheetBaseServices {
     static async getMaxColumnBySheetName(sheetName: string): Promise<number> {
         const sheets = google.sheets({ version: 'v4', auth: client });
         const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!1:1`,
         });
 
@@ -49,7 +49,7 @@ class GooglesheetBaseServices {
     //     const sheetId = await this.getSheetIdBySheetName(sheetName);
     //     console.log('sheetId', sheetId);
     //     sheets.spreadsheets.batchUpdate({
-    //         spreadsheetId: googleSheetSpreadsheetId,
+    //         spreadsheetId: googleSheetSingleton.getGoogleSheetSpreadsheetId(),
     //         resource: {
     //             requests: [
     //                 {
@@ -76,7 +76,7 @@ class GooglesheetBaseServices {
     static async deleteAllHidenSheet(): Promise<void> {
         const sheets = google.sheets({ version: 'v4', auth: client });
         const response = await sheets.spreadsheets.get({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
         });
 
         const sheetsList = response.data.sheets;
@@ -84,7 +84,7 @@ class GooglesheetBaseServices {
             if (sheet.properties.hidden) {
                 const sheetId = sheet.properties.sheetId;
                 sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: googleSheetSpreadsheetId,
+                    spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
                     resource: {
                         requests: [
                             {
@@ -98,7 +98,7 @@ class GooglesheetBaseServices {
                     if (err) {
                         console.log('The API returned an error: ' + err);
                     } else {
-                        console.log(`${result} cells appended.`);
+                        // console.log(`${result} cells appended.`);
                     }
                 });
             }
@@ -110,7 +110,7 @@ class GooglesheetBaseServices {
         const sheetId = await this.getSheetIdBySheetName(sheetName);
         const maxColumn = await this.getMaxColumnBySheetName(sheetName);
         sheets.spreadsheets.batchUpdate({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             resource: {
                 requests: [
                     {
@@ -129,7 +129,7 @@ class GooglesheetBaseServices {
             if (err) {
                 console.log('The API returned an error: ' + err);
             } else {
-                console.log(`${result} cells appended.`);
+                // console.log(`${result} cells appended.`);
             }
         });
 
@@ -141,7 +141,7 @@ class GooglesheetBaseServices {
         };
 
         GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: googleSheetSpreadsheetId,
+            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
             range: `${sheetName}!A1`,
             valueInputOption: 'USER_ENTERED',
             resource,
@@ -149,7 +149,7 @@ class GooglesheetBaseServices {
             if (err) {
                 console.log('The API returned an error: ' + err);
             } else {
-                console.log(`${result} cells appended.`);
+                // console.log(`${result} cells appended.`);
             }
         });
     }

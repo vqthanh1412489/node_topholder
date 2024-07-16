@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { ChainbaseM } from '../models/chainbase_m';
-import { AddressWithBalanceM } from '../models/address_with_balance_m';
 import { getRandomItem } from '../utils';
+import { ChainbaseM } from '../models';
 
 export class ChainbaseProvider {
     private readonly baseUrl: string = 'https://api.chainbase.online/v1';
@@ -11,20 +10,20 @@ export class ChainbaseProvider {
         '2gE09iWSfjeKzAOyQWPs1cnDokA', // vqthanh10
     ];
 
-    async getTopTokenHolders(chainId: number, contractAddress: string, page: number): Promise<AddressWithBalanceM[]> {
+    async getTopTokenHolders(chainId: number, contractAddress: string, page: number): Promise<ChainbaseM> {
         try {
-            const response = await axios.get(`${this.baseUrl}/token/top-holders?chain_id=${chainId}&contract_address=${contractAddress}&page=${page}&limit=100`, {
+            const endPoint = `${this.baseUrl}/token/top-holders?chain_id=${chainId}&contract_address=${contractAddress}&page=${page}&limit=100`;
+            const response = await axios.get(endPoint, {
                 headers: {
                     'x-api-key': getRandomItem(this.apiKeys),
                 },
             });
 
-            console.log('apikey', getRandomItem(this.apiKeys));
+            console.log('endPoint:', endPoint);
 
-            if (response.status === 200) {
-                const data = response.data['data'];
-                const tempList = data.map((e: any) => ChainbaseM.fromJson(e));
-                return AddressWithBalanceM.convertChainbaseToAddressWithBalance(tempList);
+            if (response.status === 200 && response.data['code'] === 0 && response.data['message'] === 'ok') {
+                // console.log('response.data:', response.data);
+                return response.data
             }
 
             throw new Error(`ChainbaseM token/top-holders Error: ${response.data}`);

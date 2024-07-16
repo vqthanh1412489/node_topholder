@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { AddressWithBalanceM, TronNetworkM } from '../models';
+import { convertTronNetworkToAddressWithBalance } from '../utils';
 
 export class TronNetworkProvider {
     private readonly baseUrl: string = 'https://api.trongrid.io/v1/';
@@ -27,7 +28,7 @@ export class TronNetworkProvider {
 
             if (response.status === 200 && response.data && response.data['data']) {
                 const data = response.data['data'].map((e: any) => TronNetworkM.fromJson(e));
-                return AddressWithBalanceM.convertTronNetworkToAddressWithBalance(data);
+                return convertTronNetworkToAddressWithBalance(data);
             }
 
             throw new Error(`TronNetworkProvider getTopTokenHolders Error: ${response.data}`);

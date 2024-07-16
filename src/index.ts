@@ -78,7 +78,7 @@ async function main() {
             break;
         case EAppMode.HISTORY:
             googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
-            const START_TIME = new Date('2020-10-23');
+            const START_TIME = new Date('2022-03-24');
             const dates = getMondays(START_TIME, new Date().toISOString());
             for (let i = 0; i < dates.length; i++) {
                 exportTopholderController.setSelectDate(dates[i]);

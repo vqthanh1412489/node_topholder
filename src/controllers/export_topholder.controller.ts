@@ -1,6 +1,6 @@
 import { ChainbaseProvider, CovalenthqProvider, TelegramServices, TronNetworkProvider } from "../providers";
 import { GooglesheetBaseServices, GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_MM_WALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, mapENetworkToCovalentProvider, EWalletType, APP_MODE, EAppMode, findDifferenceWithExcelItem, convertChainbaseToAddressWithBalance, mergeDuplicateAddresses, convertCovalenthqToAddressWithBalance, } from "../utils";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_MM_WALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, mapENetworkToCovalentProvider, EWalletType, APP_MODE, EAppMode, findDifferenceWithExcelItem, convertChainbaseToAddressWithBalance, mergeDuplicateAddresses, convertCovalenthqToAddressWithBalance, convertToDecimal, } from "../utils";
 import { AddressMoreBalanceM, AddressWithBalanceM, ChainbaseM, CovalenthqM, MAddressBalanceWithType, MyTokenM } from "../models";
 
 class ExportTopholderController {
@@ -171,8 +171,9 @@ class ExportTopholderController {
                     // }
                     addressesWithBalance.push(...convertCovalenthqToAddressWithBalance(resp));
                     page = resp.data.pagination.page_number + 1;
+                    let lastItem = resp.data.items[resp.data.items.length - 1];
 
-                    shouldContinue = parseFloat((resp.data.items[resp.data.items.length - 1]).balance) >= item.minBalance;
+                    shouldContinue = convertToDecimal(lastItem.balance, lastItem.contract_decimals) >= item.minBalance;
                     // if (this.currentProvider === EProvider.Chainbase) {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                     // }

@@ -1,7 +1,7 @@
 import { ChainbaseProvider, CovalenthqProvider, TelegramServices, TronNetworkProvider } from "../providers";
 import { GooglesheetBaseServices, GooglesheetServices } from "../services";
-import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_MM_WALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, mapENetworkToCovalentProvider, EWalletType, APP_MODE, EAppMode, findDifferenceWithExcelItem, convertChainbaseToAddressWithBalance, mergeDuplicateAddresses, } from "../utils";
-import { AddressMoreBalanceM, AddressWithBalanceM, ChainbaseM, MAddressBalanceWithType, MyTokenM } from "../models";
+import { EProvider, mapENetworkToChainbaseProvider, ENetwork, calculatePercentageDifference, PERCENT_HOT_WALLET_CHECK, PERCENT_COLD_WALLET_CHECK, PERCENT_MM_WALLET_CHECK, escapeSpecialCharacters, getCurrentTimeInBangkok, mapENetworkToCovalentProvider, EWalletType, APP_MODE, EAppMode, findDifferenceWithExcelItem, convertChainbaseToAddressWithBalance, mergeDuplicateAddresses, convertCovalenthqToAddressWithBalance, } from "../utils";
+import { AddressMoreBalanceM, AddressWithBalanceM, ChainbaseM, CovalenthqM, MAddressBalanceWithType, MyTokenM } from "../models";
 
 class ExportTopholderController {
     private currentProvider: EProvider;
@@ -111,6 +111,68 @@ class ExportTopholderController {
                     page = resp.next_page;
 
                     shouldContinue = parseFloat(resp.data[resp.data.length - 1].amount) >= item.minBalance;
+                    // if (this.currentProvider === EProvider.Chainbase) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+                    // }
+                    // console.log(`process: ${chain.address} ${page} ${addressesWithBalance.length}`);
+                }
+            }
+
+            // console.log(`temp ${temp.length}`);
+            await this.loadData({
+                addressesWithBalance,
+                // excelItemRows,
+                myToken: item,
+            });
+            console.log(`onExportTopHolderByDay ${item.name} done`);
+        } catch (e) {
+            console.log(`onExportTopHolderByDay Error: ${e}`);
+            throw e;
+        }
+    }
+
+    public async onExportHistoryTopHolderByDay(item: MyTokenM): Promise<void> {
+        try {
+            const addressesWithBalance: AddressWithBalanceM[] = [];
+
+            for (let indexChain = 0; indexChain < item.chains.length; indexChain++) {
+                const chain = item.chains[indexChain];
+                if (chain.eNetwork === ENetwork.Tron) {
+                    const resp = await this.tronNetworkProvider.getTopTokenHolders(chain.address);
+                    addressesWithBalance.push(...resp);
+                    continue;
+                }
+
+                let page = 0;
+                let shouldContinue = true;
+                while (shouldContinue) {
+                    let resp: CovalenthqM;
+                    // if (this.currentProvider === EProvider.Chainbase) {
+                    // resp = await this.chainbaseProvider.getTopTokenHolders(
+                    //     mapENetworkToChainbaseProvider[chain.eNetwork],
+                    //     chain.address,
+                    //     page,
+                    // );
+                    // } else if (this.currentProvider === EProvider.Covalenthq) {
+                    resp = await this.covalenthqProvider.getTopTokenHolders({
+                        chainName: mapENetworkToCovalentProvider[chain.eNetwork],
+                        tokenAddress: chain.address,
+                        pageNumber: page,
+                        date: this.selectedDate,
+                    });
+                    // }
+
+                    // if (resp === null) {
+                    //     throw new Error('resp is null');
+                    // }
+
+                    // if (resp. === 0) {
+                    //     break;
+                    // }
+                    addressesWithBalance.push(...convertCovalenthqToAddressWithBalance(resp));
+                    page = resp.data.pagination.page_number + 1;
+
+                    shouldContinue = parseFloat((resp.data.items[resp.data.items.length - 1]).balance) >= item.minBalance;
                     // if (this.currentProvider === EProvider.Chainbase) {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                     // }

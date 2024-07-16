@@ -77,11 +77,12 @@ async function main() {
             });
             break;
         case EAppMode.HISTORY:
-            const START_TIME = new Date('2022-03-19');
+            googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
+            const START_TIME = new Date('2020-10-23');
             const dates = getMondays(START_TIME, new Date().toISOString());
             for (let i = 0; i < dates.length; i++) {
                 exportTopholderController.setSelectDate(dates[i]);
-                await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'APE'))
+                await exportTopholderController.onExportHistoryTopHolderByDay(myTokens.find(x => x.name === 'AUDIO'))
                 //delay 2 second
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }

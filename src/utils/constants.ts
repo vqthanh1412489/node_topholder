@@ -161,6 +161,16 @@ export const myTokens: MyTokenM[] = [
         ],
         minBalance: 50000,
     }),
+    new MyTokenM({
+        name: 'AUDIO',
+        chains: [
+            new AddressByChainM({
+                eNetwork: ENetwork.Ethereum,
+                address: '0x18aaa7115705e8be94bffebde57af9bfc265b998',
+            }),
+        ],
+        minBalance: 20000,
+    }),
     // new MyTokenM({
     //     name: '0x0',
     //     chains: [
@@ -255,4 +265,4 @@ export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
 export const PERCENT_MM_WALLET_CHECK = 10;
 
-export const APP_MODE: EAppMode = EAppMode.DAILY;
+export const APP_MODE: EAppMode = EAppMode.HISTORY;

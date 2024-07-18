@@ -1,5 +1,6 @@
 const moment = require('moment-timezone');
 import { AddressWithBalanceM, ArkhamAddressInfoM, ChainbaseM, CovalenthqM, TronNetworkM } from "../models";
+import { EWalletType } from "./enums";
 
 export function getChain(instance: ArkhamAddressInfoM): string {
     return instance.chain || '';
@@ -110,11 +111,12 @@ export function insertZeroAfterAddress(
 
     // Create a new array by copying elements before and after the address, and inserting "0" in between
     const newArray: any[] = [];
-    newArray.push(originalArray[0]);
-    newArray.push('=HYPERLINK("https://platform.arkhamintelligence.com/explorer/address/' + address + '", "' + address + '")');
-    // newArray.push(address);
-    newArray.push(...Array(dayNotFound).fill(''));
-    newArray.push(originalArray[originalArray.length - 1]);
+    newArray.push(originalArray[0]); // lable
+    newArray.push('=HYPERLINK("https://platform.arkhamintelligence.com/explorer/address/' + address + '", "' + address + '")'); //address
+    newArray.push(''); // lable 2
+    newArray.push(originalArray[2]);// type
+    newArray.push(...Array(dayNotFound).fill('')); // Insert '' for the number of days not found
+    newArray.push(originalArray[3]); // amount
 
     return newArray;
 }
@@ -241,4 +243,33 @@ export function mergeDuplicateAddresses(addressWithBalances: AddressWithBalanceM
     }
 
     return Object.values(uniqueAddresses);
+}
+
+export function classifyStringToTag(name) {
+    if (!name || name.trim() === '') {
+        return EWalletType.child;
+    }
+
+    const lowerName = name.toLowerCase().trim();
+    if (lowerName.trim() === 'opensea user') {
+        return EWalletType.child;
+    }
+
+    if (lowerName.includes(' cold') || lowerName.trim() === 'gnosis safe proxy') {
+        return EWalletType.cold;
+    }
+
+    if (lowerName.includes('hot wallet') || lowerName.includes(' deposit')) {
+        return EWalletType.hot;
+    }
+
+    if (lowerName.includes('gnosis safe proxy')) {
+        return EWalletType.lock;
+    }
+
+    if (lowerName.endsWith('.eth') || lowerName.includes('opensea user')) {
+        return EWalletType.mm;
+    }
+
+    return 'unknown';
 }

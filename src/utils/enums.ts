@@ -44,7 +44,7 @@ export enum EWalletType {
     lock = 'lock',
     stack = 'stack',
     dev = 'dev',
-    new = 'new',
+    unknown = 'unknown',
 }
 
 export enum EAppMode {

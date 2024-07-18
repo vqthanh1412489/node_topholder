@@ -14,144 +14,140 @@ class GooglesheetBaseServices {
         return google.sheets({ version: 'v4', auth: client });
     }
 
-    static async getSheetIdBySheetName(sheetName: string): Promise<string[]> {
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const response = await sheets.spreadsheets.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-        });
+    static async getSheetIdBySheetName(sheetName: string): Promise<number> {
+        try {
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+            });
 
-        const sheet = response.data.sheets.find(sheet => sheet.properties.title === sheetName);
-        return sheet.properties.sheetId
-    }
-
-    static async getDatasBySheetName(sheetName: string): Promise<string[][]> {
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: sheetName,
-        });
-
-        return response.data.values;
-    }
-
-    static async getMaxColumnBySheetName(sheetName: string): Promise<number> {
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!1:1`,
-        });
-
-        return response.data.values[0].length;
-    }
-
-    // static async deleteColumnBySheetName(sheetName: string, column: number): Promise<void> {
-    //     const sheets = google.sheets({ version: 'v4', auth: client });
-    //     const sheetId = await this.getSheetIdBySheetName(sheetName);
-    //     console.log('sheetId', sheetId);
-    //     sheets.spreadsheets.batchUpdate({
-    //         spreadsheetId: googleSheetSingleton.getGoogleSheetSpreadsheetId(),
-    //         resource: {
-    //             requests: [
-    //                 {
-    //                     deleteDimension: {
-    //                         range: {
-    //                             sheetId,
-    //                             dimension: 'COLUMNS',
-    //                             startIndex: column,
-    //                             endIndex: column + 1
-    //                         }
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     }, (err, result) => {
-    //         if (err) {
-    //             console.log('The API returned an error: ' + err);
-    //         } else {
-    //             console.log(`${result} cells appended.`);
-    //         }
-    //     });
-    // }
-
-    static async deleteAllHidenSheet(): Promise<void> {
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const response = await sheets.spreadsheets.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-        });
-
-        const sheetsList = response.data.sheets;
-        for (const sheet of sheetsList) {
-            if (sheet.properties.hidden) {
-                const sheetId = sheet.properties.sheetId;
-                sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-                    resource: {
-                        requests: [
-                            {
-                                deleteSheet: {
-                                    sheetId,
-                                }
-                            }
-                        ]
-                    }
-                }, (err, result) => {
-                    if (err) {
-                        console.log('The API returned an error: ' + err);
-                    } else {
-                        // console.log(`${result} cells appended.`);
-                    }
-                });
+            const sheet = response.data.sheets.find(sheet => sheet.properties.title === sheetName);
+            if (sheet) {
+                return sheet.properties.sheetId;
+            } else {
+                console.log(`Sheet with name "${sheetName}" not found.`);
+                return null;
             }
+        } catch (err) {
+            console.log('The API returned an error: getSheetIdBySheetName' + err);
+            return null;
         }
     }
 
-    static async insertColumnBySheetNameToEnd(sheetName: string): Promise<void> {
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const sheetId = await this.getSheetIdBySheetName(sheetName);
-        const maxColumn = await this.getMaxColumnBySheetName(sheetName);
-        sheets.spreadsheets.batchUpdate({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            resource: {
-                requests: [
-                    {
-                        insertDimension: {
-                            range: {
-                                sheetId,
-                                dimension: 'COLUMNS',
-                                startIndex: maxColumn,
-                                endIndex: maxColumn + 1
+    static async getDatasBySheetName(sheetName: string): Promise<string[][]> {
+        try {
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                range: sheetName,
+            });
+
+            if (response.data.values) {
+                return response.data.values;
+            } else {
+                console.log('No data found in the specified range.');
+                return [];
+            }
+        } catch (err) {
+            console.log('The API returned an error: getDatasBySheetName' + err);
+            return [];
+        }
+    }
+
+    static async getMaxColumnHaveDataBySheetName(sheetName: string): Promise<number> {
+        try {
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                range: `${sheetName}!1:1`,
+            });
+            console.log(response.data.values)
+
+            if (response.data.values && response.data.values[0]) {
+                return response.data.values[0].length;
+            } else {
+                console.log('No data found in the specified range.');
+                return 0;
+            }
+        } catch (err) {
+            console.log('The API returned an error: getMaxColumnHaveDataBySheetName' + err);
+            return 0;
+        }
+    }
+
+    static async deleteAllHiddenSheets(): Promise<void> {
+        try {
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+            });
+
+            const sheetsList = response.data.sheets;
+            for (const sheet of sheetsList) {
+                if (sheet.properties.hidden) {
+                    const sheetId = sheet.properties.sheetId;
+                    await sheets.spreadsheets.batchUpdate({
+                        spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                        resource: {
+                            requests: [
+                                {
+                                    deleteSheet: {
+                                        sheetId,
+                                    }
+                                }
+                            ]
+                        }
+                    });
+                }
+            }
+        } catch (err) {
+            console.log('The API returned an error: deleteAllHiddenSheets' + err);
+        }
+    }
+
+    static async insertColumnBySheetNameToEnd(sheetName: string, maxColumn: number): Promise<void> {
+        try {
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const sheetId = await this.getSheetIdBySheetName(sheetName);
+            // const maxColumn = await this.getMaxColumnHaveDataBySheetName(sheetName);
+
+            await sheets.spreadsheets.batchUpdate({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                resource: {
+                    requests: [
+                        {
+                            insertDimension: {
+                                range: {
+                                    sheetId,
+                                    dimension: 'COLUMNS',
+                                    startIndex: maxColumn,
+                                    endIndex: maxColumn + 1
+                                }
                             }
                         }
-                    }
-                ]
-            }
-        }, (err, result) => {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            } else {
-                // console.log(`${result} cells appended.`);
-            }
-        });
-
+                    ]
+                }
+            });
+        } catch (err) {
+            console.log('The API returned an error: insertColumnBySheetNameToEnd' + err);
+        }
     }
 
     static async insertValueByRangeStartAtA1(sheetName: string, values: any): Promise<void> {
-        const resource = {
-            values,
-        };
+        try {
+            const resource = {
+                values,
+            };
 
-        GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!A1`,
-            valueInputOption: 'USER_ENTERED',
-            resource,
-        }, (err, result) => {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            } else {
-                // console.log(`${result} cells appended.`);
-            }
-        });
+            await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                range: `${sheetName}!A1`,
+                valueInputOption: 'USER_ENTERED',
+                resource,
+            });
+        } catch (err) {
+            console.log('The API returned an error: insertValueByRangeStartAtA1' + err);
+        }
     }
 }
 

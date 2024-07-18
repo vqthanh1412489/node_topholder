@@ -93,16 +93,18 @@ async function main() {
         case EAppMode.TEST:
             googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
             // exportTopholderController.calculateMeanDifference(myTokens.find(x => x.name === 'HOOK'));
-            // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
-            for (let i = 0; i < myTokens.length; i++) {
-                try {
-                    await exportTopholderController.onExportTopHolderByDay(myTokens[i])
-                } catch (error) {
-                    console.log(`Error: ${error.toString()}`)
-                    telegramService.sendMessage(`Error ${error.toString()}`);
-                    break
-                }
-            }
+            await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
+            // let a = await GooglesheetBaseServices.getMaxColumnHaveDataBySheetName('HOOK');
+            // console.log(a)
+            // for (let i = 0; i < myTokens.length; i++) {
+            //     try {
+            //         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+            //     } catch (error) {
+            //         console.log(`Error: ${error.toString()}`)
+            //         telegramService.sendMessage(`Error ${error.toString()}`);
+            //         break
+            //     }
+            // }
             break;
         default:
             console.log('Invalid mode')

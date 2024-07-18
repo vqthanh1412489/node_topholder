@@ -22,113 +22,99 @@ class ExportTopholderController {
         this.selectedDate = date;
     }
 
-    private async loadData({
+    private async onGetNewBalanceForOldAddresses_NewAddress({
+        addressesFromSheet,
         addressesWithBalance,
-        // excelItemRows,
         myToken,
     }: {
+        addressesFromSheet: string[];
         addressesWithBalance: AddressWithBalanceM[];
-        // excelItemRows: string[];
         myToken: MyTokenM;
-    }): Promise<void> {
-        const excelItemRows = await GooglesheetServices.getListAddressBySheetName(myToken.name);
-        let insertDataColumns: any[] = [];
+    }): Promise<[string[][], AddressWithBalanceM[]]> {
+        // const excelItemRows = await GooglesheetServices.getListAddressBySheetName(myToken.name);
+        let newBalanceForOldAddresses: string[][] = [];
         if (APP_MODE === EAppMode.HISTORY) {
-            insertDataColumns.push([this.selectedDate]);
+            newBalanceForOldAddresses.push([this.selectedDate]);
         } else {
-            insertDataColumns.push([getCurrentTimeInBangkok()]);
+            newBalanceForOldAddresses.push([getCurrentTimeInBangkok()]);
         }
 
         const mergedData = mergeDuplicateAddresses(addressesWithBalance);
         const filteredData = mergedData.filter((element) => element.amount >= myToken.minBalance);
 
-        for (const excelItemRow of excelItemRows) {
+        for (const excelItemRow of addressesFromSheet) {
             const item = filteredData.find((e) => {
-                // console.log(`excelItemRow: ${excelItemRow} e.address: ${e.address}`);
                 if (excelItemRow && e && e.address) {
                     return excelItemRow.toLowerCase() === e.address.toLowerCase();
                 }
                 return false;
             }) || { amount: 0, address: '' };
             if (item.address !== '') {
-                insertDataColumns.push([item.amount.toString()]);
+                newBalanceForOldAddresses.push([item.amount.toString()]);
             } else {
-                insertDataColumns.push(['']);
+                newBalanceForOldAddresses.push(['']);
             }
         }
 
-        const diffAddresses = findDifferenceWithExcelItem(filteredData, excelItemRows);
-        await GooglesheetBaseServices.insertColumnBySheetNameToEnd(myToken.name);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await GooglesheetServices.addBalanceViaDay(myToken.name, insertDataColumns, diffAddresses);
-        // if (APP_MODE === EAppMode.DAILY) {
-        //     await new Promise((resolve) => setTimeout(resolve, 3000));
-        //     await this.calculateMeanDifference(myToken);
-        // }
-
-        // console.log(`loadData ${myToken.name} done`);
+        const newAddresses = findDifferenceWithExcelItem(filteredData, addressesFromSheet);
+        return [newBalanceForOldAddresses, newAddresses];
     }
 
     public async onExportTopHolderByDay(item: MyTokenM): Promise<void> {
         try {
-            const addressesWithBalance: AddressWithBalanceM[] = [];
+            let addressesWithBalance = await this.getTopHolderByDayFromChainBase(item);
+            let datasBySheetName = await GooglesheetBaseServices.getDatasBySheetName(item.name);
+            let maxColumn = datasBySheetName[0].length;
+            let addressesFromSheet: string[] = datasBySheetName.slice(1).map((e) => e[1]);
+            console.log('addressesFromSheet', addressesFromSheet);
+            console.log('maxC', maxColumn);
 
-            for (let indexChain = 0; indexChain < item.chains.length; indexChain++) {
-                const chain = item.chains[indexChain];
-                if (chain.eNetwork === ENetwork.Tron) {
-                    const resp = await this.tronNetworkProvider.getTopTokenHolders(chain.address);
-                    addressesWithBalance.push(...resp);
-                    continue;
-                }
-
-                let page = 0;
-                let shouldContinue = true;
-                while (shouldContinue) {
-                    let resp: ChainbaseM;
-                    // if (this.currentProvider === EProvider.Chainbase) {
-                    resp = await this.chainbaseProvider.getTopTokenHolders(
-                        mapENetworkToChainbaseProvider[chain.eNetwork],
-                        chain.address,
-                        page,
-                    );
-                    // } else if (this.currentProvider === EProvider.Covalenthq) {
-                    //     resp = await this.covalenthqProvider.getTopTokenHolders({
-                    //         chainName: mapENetworkToCovalentProvider[chain.eNetwork],
-                    //         tokenAddress: chain.address,
-                    //         pageNumber: page,
-                    //         date: this.selectedDate,
-                    //     });
-                    // }
-
-                    // if (resp === null) {
-                    //     throw new Error('resp is null');
-                    // }
-
-                    // if (resp. === 0) {
-                    //     break;
-                    // }
-                    addressesWithBalance.push(...convertChainbaseToAddressWithBalance(resp));
-                    page = resp.next_page;
-
-                    shouldContinue = parseFloat(resp.data[resp.data.length - 1].amount) >= item.minBalance;
-                    // if (this.currentProvider === EProvider.Chainbase) {
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-                    // }
-                    // console.log(`process: ${chain.address} ${page} ${addressesWithBalance.length}`);
-                }
-            }
-
-            // console.log(`temp ${temp.length}`);
-            await this.loadData({
+            const newBalanceForOldAddresses_NewAddress: [any[], AddressWithBalanceM[]] = await this.onGetNewBalanceForOldAddresses_NewAddress({
+                addressesFromSheet,
                 addressesWithBalance,
-                // excelItemRows,
                 myToken: item,
             });
+            console.log('newBalanceForOldAddresses_NewAddress', newBalanceForOldAddresses_NewAddress);
+            await GooglesheetBaseServices.insertColumnBySheetNameToEnd(item.name, maxColumn);
+            await GooglesheetServices.pushNewDataToGoogleSheet(item.name, maxColumn, newBalanceForOldAddresses_NewAddress[0], newBalanceForOldAddresses_NewAddress[1]);
+            await GooglesheetServices.removePrevousDataColumeOnGoogleSheet(item.name, maxColumn);
             console.log(`onExportTopHolderByDay ${item.name} done`);
         } catch (e) {
             console.log(`onExportTopHolderByDay Error: ${e}`);
             throw e;
         }
+    }
+
+    public async getTopHolderByDayFromChainBase(item: MyTokenM): Promise<AddressWithBalanceM[]> {
+        const addressesWithBalance: AddressWithBalanceM[] = [];
+
+        for (let indexChain = 0; indexChain < item.chains.length; indexChain++) {
+            const chain = item.chains[indexChain];
+            if (chain.eNetwork === ENetwork.Tron) {
+                const resp = await this.tronNetworkProvider.getTopTokenHolders(chain.address);
+                addressesWithBalance.push(...resp);
+                continue;
+            }
+
+            let page = 0;
+            let shouldContinue = true;
+            while (shouldContinue) {
+                let resp: ChainbaseM;
+                resp = await this.chainbaseProvider.getTopTokenHolders(
+                    mapENetworkToChainbaseProvider[chain.eNetwork],
+                    chain.address,
+                    page,
+                );
+                addressesWithBalance.push(...convertChainbaseToAddressWithBalance(resp));
+                page = resp.next_page;
+
+                shouldContinue = parseFloat(resp.data[resp.data.length - 1].amount) >= item.minBalance;
+                await new Promise((resolve) => setTimeout(resolve, 500));//TODO mix key
+                // console.log(`process: ${chain.address} ${page} ${addressesWithBalance.length}`);
+            }
+        }
+
+        return addressesWithBalance;
     }
 
     public async onExportHistoryTopHolderByDay(item: MyTokenM): Promise<void> {
@@ -182,11 +168,11 @@ class ExportTopholderController {
             }
 
             // console.log(`temp ${temp.length}`);
-            await this.loadData({
-                addressesWithBalance,
-                // excelItemRows,
-                myToken: item,
-            });
+            // const newBalanceForOldAddresses_NewAddress: [any[], AddressWithBalanceM[]] = await this.onGetNewBalanceForOldAddresses_NewAddress({
+            //     addressesFromSheet,
+            //     addressesWithBalance,
+            //     myToken: item,
+            // });
             console.log(`onExportTopHolderByDay ${item.name} done`);
         } catch (e) {
             console.log(`onExportTopHolderByDay Error: ${e}`);
@@ -266,7 +252,7 @@ class ExportTopholderController {
         const lockItems = addressesWithBalance.filter((e) => e.type === EWalletType.lock);
         const stackingItems = addressesWithBalance.filter((e) => e.type === EWalletType.stack);
         const devItems = addressesWithBalance.filter((e) => e.type === EWalletType.dev);
-        const newItems = addressesWithBalance.filter((e) => e.type === EWalletType.new);
+        const newItems = addressesWithBalance.filter((e) => e.type === EWalletType.unknown);
 
         console.log('newItems', newItems);
 

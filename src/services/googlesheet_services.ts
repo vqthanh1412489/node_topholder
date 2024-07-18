@@ -1,4 +1,4 @@
-import { APP_MODE, COLUMN_BEGIN_DATA, EAppMode, EWalletType, getColumnName, getCommonName, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
+import { classifyStringToTag, COLUMN_BEGIN_DATA, EWalletType, getColumnName, getCommonName, insertZeroAfterAddress, removeDuplicatesItemInList } from "../utils";
 import { GooglesheetBaseServices } from "../services";
 import { ArrkhamProvider } from "../providers";
 import { AddressMoreBalanceM, AddressWithBalanceM } from "../models";
@@ -6,175 +6,186 @@ import appConfigSingleton from '../singletons/app_config_singleton';
 
 class GooglesheetServices {
     static async getListAddressBySheetName(sheetName: string): Promise<string[]> {
-        const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!B2:B`,
-        });
+        try {
+            const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                range: `${sheetName}!B2:B`,
+            });
 
-        const rows = response.data.values.map(row => row[0]);
-        // console.log('getListAddressBySheetName', rows);
-        return rows
+            const rows = response.data.values.map(row => row[0]);
+            // console.log('getListAddressBySheetName', rows);
+            return rows;
+        } catch (err) {
+            console.log('The API returned an error: ' + err);
+            return [];
+        }
     }
 
     static async getAndFilterAddressesBySheetName(sheetName: string): Promise<string[]> {
-        const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!B2:B`,
-        });
+        try {
+            const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                range: `${sheetName}!B2:B`,
+            });
 
-        const row = response.data.values.map(row => row[0]);
-        const result = removeDuplicatesItemInList(row);
-        return result;
+            const rows = response.data.values.map(row => row[0]);
+            const result = removeDuplicatesItemInList(rows);
+            return result;
+        } catch (err) {
+            console.log('The API returned an error: ' + err);
+            return [];
+        }
     }
 
     static async getAddressesMoreBalance(sheetName: string): Promise<any> {
-        const response = await GooglesheetBaseServices.getDatasBySheetName(sheetName);
-        const result: AddressMoreBalanceM[] = [];
-        for (let i = 1; i < response.length; i++) {
-            const item = response[i];
-            result.push({
-                address: item[1],
-                prevousAmount: parseFloat(item[6]),
-                currentAmount: parseFloat(item[7]),
-                type: EWalletType[item[3]],
+        try {
+            const response = await GooglesheetBaseServices.getDatasBySheetName(sheetName);
+            const result: AddressMoreBalanceM[] = [];
+
+            for (let i = 1; i < response.length; i++) {
+                const item = response[i];
+                result.push({
+                    address: item[1],
+                    prevousAmount: parseFloat(item[6]),
+                    currentAmount: parseFloat(item[7]),
+                    type: EWalletType[item[3]],
+                });
+            }
+
+            // console.log('getAddressesMoreBalance result', result);
+
+            return result.map((e) => {
+                if (isNaN(e.prevousAmount)) {
+                    e.prevousAmount = 0;
+                }
+
+                if (isNaN(e.currentAmount)) {
+                    e.currentAmount = 0;
+                }
+
+                return e;
             });
+        } catch (err) {
+            console.log('The API returned an error: ' + err);
+            return [];
         }
-        // console.log('getAddressesMoreBalance result', result);
-
-        return result.map((e) => {
-            if (isNaN(e.prevousAmount)) {
-                e.prevousAmount = 0;
-            }
-
-            if (isNaN(e.currentAmount)) {
-                e.currentAmount = 0;
-            }
-
-            return e;
-        });
     }
 
-    static async removeDataBeforePush(sheetName: string): Promise<void> {
-        const maxColumnBySheetName = await GooglesheetBaseServices.getMaxColumnBySheetName(sheetName);
-        // console.log('maxColumnBySheetName ', maxColumnBySheetName)
-        if (maxColumnBySheetName < COLUMN_BEGIN_DATA + 3) {
-            return;
-        }
-        const sheetId = await GooglesheetBaseServices.getSheetIdBySheetName(sheetName);
-        GooglesheetBaseServices.getSheetsInstance().spreadsheets.batchUpdate({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            resource: {
-                requests: [
-                    {
-                        deleteDimension: {
-                            range: {
-                                sheetId,
-                                dimension: 'COLUMNS',
-                                startIndex: COLUMN_BEGIN_DATA - 1,
-                                endIndex: COLUMN_BEGIN_DATA,
+
+    static async removePrevousDataColumeOnGoogleSheet(sheetName: string, maxColumn: number): Promise<void> {
+        try {
+            if (maxColumn < COLUMN_BEGIN_DATA + 4) {
+                return;
+            }
+            const sheetId = await GooglesheetBaseServices.getSheetIdBySheetName(sheetName);
+            await GooglesheetBaseServices.getSheetsInstance().spreadsheets.batchUpdate({
+                spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                resource: {
+                    requests: [
+                        {
+                            deleteDimension: {
+                                range: {
+                                    sheetId,
+                                    dimension: 'COLUMNS',
+                                    startIndex: COLUMN_BEGIN_DATA - 1,
+                                    endIndex: COLUMN_BEGIN_DATA,
+                                }
                             }
                         }
-                    }
-                ]
-            }
-        }, (err, result) => {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            } else {
-                console.log(`${result} cells appended.`);
-            }
-        });
+                    ]
+                }
+            });
+        } catch (err) {
+            console.log('The API returned an error: ' + err);
+        }
     }
 
-    static async updateAddressInfo(sheetName: string, values: any) {
-        const resource = {
-            values,
-        };
 
-        GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!C1`,
-            valueInputOption: 'USER_ENTERED',
-            resource,
-        }, (err, result) => {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            } else {
-                console.log(`${result} cells appended.`);
-            }
-        });
-    }
+    // static async updateAddressInfo(sheetName: string, values: any) {
+    //     const resource = {
+    //         values,
+    //     };
 
-    static async addBalanceViaDay(
+    //     GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
+    //         spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+    //         range: `${sheetName}!C1`,
+    //         valueInputOption: 'USER_ENTERED',
+    //         resource,
+    //     }, (err, result) => {
+    //         if (err) {
+    //             console.log('The API returned an error: ' + err);
+    //         } else {
+    //             console.log(`${result} cells appended.`);
+    //         }
+    //     });
+    // }
+
+    static async pushNewDataToGoogleSheet(
         sheetName: string,
+        maxColumn: number,
         values: any,
         differenceList: AddressWithBalanceM[] = [],
     ): Promise<void> {
-        const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range: `${sheetName}!1:1`, // Lấy dữ liệu từ hàng đầu tiên
-        });
+        try {
+            // const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
+            //     spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+            //     range: `${sheetName}!1:1`,
+            // });
 
-        const lastColumn = response.data.values[0].length;
-        // console.log(`lastColumn ${lastColumn}`)
+            // const lastColumn = response.data.values[0].length;
+            // console.log(`lastColumn ${lastColumn}`)
 
-        const range = `${sheetName}!${getColumnName(lastColumn)}1`;
-        const resource = {
-            values,
-        };
-        await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
-            spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            range,
-            valueInputOption: 'USER_ENTERED',
-            resource,
-        }, (err, result) => {
-            if (err) {
-                console.log('The API returned an error: ' + err);
-            } else {
-                // console.log(`${result} cells appended.`);
-            }
-        });
-
-        if (differenceList.length > 0) {
-            const result: string[][] = [];
-            for (const e of differenceList) {
-                const arkhamAddressInfoM = await ArrkhamProvider.getAddressLabel(e.address);
-                const entityName = getCommonName(arkhamAddressInfoM);
-                // console.log('e.address,', e.address);
-
-                result.push(
-                    insertZeroAfterAddress(
-                        [
-                            entityName,
-                            e.address,
-                            e.amount,
-                        ],
-                        lastColumn - 2,
-                        e.address,
-                    ),
-                );
-            }
-
+            const range = `${sheetName}!${getColumnName(maxColumn)}1`;
+            console.log(`range ${range}`)
             const resource = {
-                values: result,
+                values,
             };
-
-            await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.append({
+            await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.update({
                 spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-                range: `${sheetName}!A1`,
+                range,
                 valueInputOption: 'USER_ENTERED',
                 resource,
-            }, (err, result) => {
-                if (err) {
-                    console.log('The API returned an error: ' + err);
-                } else {
-                    // console.log(`${result.data.updates.updatedCells} cells appended.`);
-                }
             });
-        }
 
-        if (APP_MODE === EAppMode.DAILY) {
-            await this.removeDataBeforePush(sheetName);
+            // console.log('differenceList', differenceList.length);
+            // console.log('differenceList', differenceList);
+
+            if (differenceList.length > 0) {
+                const result: string[][] = [];
+                for (const e of differenceList) {
+                    const arkhamAddressInfoM = await ArrkhamProvider.getAddressLabel(e.address);
+                    const entityName = getCommonName(arkhamAddressInfoM);
+                    const type = classifyStringToTag(entityName);
+                    console.log('entityName', entityName);
+                    console.log('type', type);
+
+                    result.push(
+                        insertZeroAfterAddress(
+                            [
+                                entityName,
+                                e.address,
+                                type,
+                                e.amount,
+                            ],
+                            maxColumn - 4,
+                            e.address,
+                        ),
+                    );
+                }
+
+                const resource = {
+                    values: result,
+                };
+
+                await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.append({
+                    spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
+                    range: `${sheetName}!A1`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource,
+                });
+            }
+        } catch (error) {
+            console.log('The API returned an error: pushNewDataToGoogleSheet' + error);
         }
     }
 

@@ -109,7 +109,6 @@ class GooglesheetBaseServices {
         try {
             const sheets = google.sheets({ version: 'v4', auth: client });
             const sheetId = await this.getSheetIdBySheetName(sheetName);
-            // const maxColumn = await this.getMaxColumnHaveDataBySheetName(sheetName);
 
             await sheets.spreadsheets.batchUpdate({
                 spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),

@@ -66,15 +66,12 @@ class ExportTopholderController {
             let datasBySheetName = await GooglesheetBaseServices.getDatasBySheetName(item.name);
             let maxColumn = datasBySheetName[0].length;
             let addressesFromSheet: string[] = datasBySheetName.slice(1).map((e) => e[1]);
-            console.log('addressesFromSheet', addressesFromSheet);
-            console.log('maxC', maxColumn);
 
             const newBalanceForOldAddresses_NewAddress: [any[], AddressWithBalanceM[]] = await this.onGetNewBalanceForOldAddresses_NewAddress({
                 addressesFromSheet,
                 addressesWithBalance,
                 myToken: item,
             });
-            console.log('newBalanceForOldAddresses_NewAddress', newBalanceForOldAddresses_NewAddress);
             await GooglesheetBaseServices.insertColumnBySheetNameToEnd(item.name, maxColumn);
             await GooglesheetServices.pushNewDataToGoogleSheet(item.name, maxColumn, newBalanceForOldAddresses_NewAddress[0], newBalanceForOldAddresses_NewAddress[1]);
             await GooglesheetServices.removePrevousDataColumeOnGoogleSheet(item.name, maxColumn);

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { getRandomItem } from '../utils';
 import { ChainbaseM } from '../models';
 
 export class ChainbaseProvider {
@@ -10,12 +9,20 @@ export class ChainbaseProvider {
         '2gE09iWSfjeKzAOyQWPs1cnDokA', // vqthanh10
     ];
 
+    private currentKeyIndex: number = 0;
+
+    private getNextApiKey(): string {
+        const apiKey = this.apiKeys[this.currentKeyIndex];
+        this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
+        return apiKey;
+    }
+
     async getTopTokenHolders(chainId: number, contractAddress: string, page: number): Promise<ChainbaseM> {
         try {
             const endPoint = `${this.baseUrl}/token/top-holders?chain_id=${chainId}&contract_address=${contractAddress}&page=${page}&limit=100`;
             const response = await axios.get(endPoint, {
                 headers: {
-                    'x-api-key': getRandomItem(this.apiKeys),
+                    'x-api-key': this.getNextApiKey(),
                 },
             });
 

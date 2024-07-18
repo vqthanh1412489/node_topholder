@@ -91,11 +91,6 @@ export function removeDuplicates(arr) {
     return arr.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-export function getRandomItem(items: string[]): string {
-    const randomIndex = Math.floor(Math.random() * items.length);
-    return items[randomIndex];
-}
-
 export function insertZeroAfterAddress(
     originalArray: any[],
     dayNotFound: number,

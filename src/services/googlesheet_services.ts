@@ -127,16 +127,7 @@ class GooglesheetServices {
         differenceList: AddressWithBalanceM[] = [],
     ): Promise<void> {
         try {
-            // const response = await GooglesheetBaseServices.getSheetsInstance().spreadsheets.values.get({
-            //     spreadsheetId: appConfigSingleton.getGoogleSheetSpreadsheetId(),
-            //     range: `${sheetName}!1:1`,
-            // });
-
-            // const lastColumn = response.data.values[0].length;
-            // console.log(`lastColumn ${lastColumn}`)
-
             const range = `${sheetName}!${getColumnName(maxColumn)}1`;
-            console.log(`range ${range}`)
             const resource = {
                 values,
             };
@@ -146,9 +137,6 @@ class GooglesheetServices {
                 valueInputOption: 'USER_ENTERED',
                 resource,
             });
-
-            // console.log('differenceList', differenceList.length);
-            // console.log('differenceList', differenceList);
 
             if (differenceList.length > 0) {
                 const result: string[][] = [];

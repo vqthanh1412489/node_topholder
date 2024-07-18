@@ -106,8 +106,6 @@ class ExportTopholderController {
                 page = resp.next_page;
 
                 shouldContinue = parseFloat(resp.data[resp.data.length - 1].amount) >= item.minBalance;
-                await new Promise((resolve) => setTimeout(resolve, 500));//TODO mix key
-                // console.log(`process: ${chain.address} ${page} ${addressesWithBalance.length}`);
             }
         }
 

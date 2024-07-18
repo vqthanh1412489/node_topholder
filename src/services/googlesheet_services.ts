@@ -144,8 +144,8 @@ class GooglesheetServices {
                     const arkhamAddressInfoM = await ArrkhamProvider.getAddressLabel(e.address);
                     const entityName = getCommonName(arkhamAddressInfoM);
                     const type = classifyStringToTag(entityName);
-                    console.log('entityName', entityName);
-                    console.log('type', type);
+                    // console.log('entityName', entityName);
+                    // console.log('type', type);
 
                     result.push(
                         insertZeroAfterAddress(

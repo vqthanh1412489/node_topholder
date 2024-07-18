@@ -48,8 +48,8 @@ export enum EWalletType {
 }
 
 export enum EAppMode {
-    DAILY,
-    HISTORY,
-    ANALYSIS_HISTORY,
-    TEST,
+    DAILY = 'DAILY',
+    HISTORY = 'HISTORY',
+    ANALYSIS_HISTORY = 'ANALYSIS_HISTORY',
+    TEST = 'TEST',
 }

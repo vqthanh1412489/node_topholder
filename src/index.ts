@@ -43,7 +43,7 @@ async function main() {
     switch (APP_MODE) {
         case EAppMode.DAILY:
             // cron.schedule('5,8 16 * * *', async () => {
-            cron.schedule('0 7 * * *', async () => {
+            // cron.schedule('0 7 * * *', async () => {
                 googleSheetSingleton.setGoogleSheetSpreadsheetId('1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I');// DATA
                 for (let i = 0; i < myTokens.length; i++) {
                     try {
@@ -54,27 +54,27 @@ async function main() {
                         break
                     }
                 }
-            }, {
-                scheduled: true,
-                timezone: "Asia/Ho_Chi_Minh"
-            });
+            // }, {
+            //     scheduled: true,
+            //     timezone: "Asia/Ho_Chi_Minh"
+            // });
 
             // cron.schedule('6,7 16 * * *', async () => {
-            cron.schedule('0 8,14,21 * * *', async () => {
-                googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
-                for (let i = 0; i < myTokens.length; i++) {
-                    try {
-                        await exportTopholderController.onExportTopHolderByDay(myTokens[i])
-                    } catch (error) {
-                        console.log(`Error: ${error.toString()}`)
-                        telegramService.sendMessage(escapeSpecialCharacters(`Error ${error.toString()}`));
-                        break
-                    }
-                }
-            }, {
-                scheduled: true,
-                timezone: "Asia/Ho_Chi_Minh"
-            });
+            // cron.schedule('0 8,14,21 * * *', async () => {
+            //     googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
+            //     for (let i = 0; i < myTokens.length; i++) {
+            //         try {
+            //             await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+            //         } catch (error) {
+            //             console.log(`Error: ${error.toString()}`)
+            //             telegramService.sendMessage(escapeSpecialCharacters(`Error ${error.toString()}`));
+            //             break
+            //         }
+            //     }
+            // }, {
+            //     scheduled: true,
+            //     timezone: "Asia/Ho_Chi_Minh"
+            // });
             break;
         case EAppMode.HISTORY:
             googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
@@ -93,18 +93,16 @@ async function main() {
         case EAppMode.TEST:
             googleSheetSingleton.setGoogleSheetSpreadsheetId('1dY7ZLqimh9uvYGpfm6pGX3xo8ggeJdu7SRM51Oz0Pt4');// TEST
             // exportTopholderController.calculateMeanDifference(myTokens.find(x => x.name === 'HOOK'));
-            await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'HOOK'))
-            // let a = await GooglesheetBaseServices.getMaxColumnHaveDataBySheetName('HOOK');
-            // console.log(a)
-            // for (let i = 0; i < myTokens.length; i++) {
-            //     try {
-            //         await exportTopholderController.onExportTopHolderByDay(myTokens[i])
-            //     } catch (error) {
-            //         console.log(`Error: ${error.toString()}`)
-            //         telegramService.sendMessage(`Error ${error.toString()}`);
-            //         break
-            //     }
-            // }
+            // await exportTopholderController.onExportTopHolderByDay(myTokens.find(x => x.name === 'C98'))
+            for (let i = 0; i < myTokens.length; i++) {
+                try {
+                    await exportTopholderController.onExportTopHolderByDay(myTokens[i])
+                } catch (error) {
+                    console.log(`Error: ${error.toString()}`)
+                    telegramService.sendMessage(escapeSpecialCharacters(`Error ${error.toString()}`));
+                    break
+                }
+            }
             break;
         default:
             console.log('Invalid mode')

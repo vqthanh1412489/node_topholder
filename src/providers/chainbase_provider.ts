@@ -14,6 +14,7 @@ export class ChainbaseProvider {
     private getNextApiKey(): string {
         const apiKey = this.apiKeys[this.currentKeyIndex];
         this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
+        // console.log('apiKey:', apiKey);
         return apiKey;
     }
 
@@ -26,7 +27,7 @@ export class ChainbaseProvider {
                 },
             });
 
-            console.log('endPoint:', endPoint);
+
 
             if (response.status === 200 && response.data['code'] === 0 && response.data['message'] === 'ok') {
                 // console.log('response.data:', response.data);

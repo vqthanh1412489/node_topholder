@@ -94,7 +94,7 @@ export const myTokens: MyTokenM[] = [
         minBalance: 20000,
     }),
     new MyTokenM({
-        name: 'C98',
+        name: 'C_98',
         chains: [
             new AddressByChainM({
                 eNetwork: ENetwork.Ethereum,
@@ -265,4 +265,4 @@ export const PERCENT_HOT_WALLET_CHECK = 10;
 export const PERCENT_COLD_WALLET_CHECK = 10;
 export const PERCENT_MM_WALLET_CHECK = 10;
 
-export const APP_MODE: EAppMode = EAppMode.TEST;
+export const APP_MODE: EAppMode = EAppMode.DAILY;

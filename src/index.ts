@@ -43,7 +43,7 @@ async function main() {
     switch (APP_MODE) {
         case EAppMode.DAILY:
             // cron.schedule('5,8 16 * * *', async () => {
-            // cron.schedule('0 7 * * *', async () => {
+            cron.schedule('0 7 * * *', async () => {
                 googleSheetSingleton.setGoogleSheetSpreadsheetId('1MLn8hD0CY-s13brglra_KBOOiuDIfuL2CvQ6m4wM78I');// DATA
                 for (let i = 0; i < myTokens.length; i++) {
                     try {
@@ -54,10 +54,10 @@ async function main() {
                         break
                     }
                 }
-            // }, {
-            //     scheduled: true,
-            //     timezone: "Asia/Ho_Chi_Minh"
-            // });
+            }, {
+                scheduled: true,
+                timezone: "Asia/Ho_Chi_Minh"
+            });
 
             // cron.schedule('6,7 16 * * *', async () => {
             // cron.schedule('0 8,14,21 * * *', async () => {

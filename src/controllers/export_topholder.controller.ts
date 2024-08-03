@@ -74,7 +74,7 @@ class ExportTopholderController {
             });
             await GooglesheetBaseServices.insertColumnBySheetNameToEnd(item.name, maxColumn);
             await GooglesheetServices.pushNewDataToGoogleSheet(item.name, maxColumn, newBalanceForOldAddresses_NewAddress[0], newBalanceForOldAddresses_NewAddress[1]);
-            await GooglesheetServices.removePrevousDataColumeOnGoogleSheet(item.name, maxColumn);
+            // await GooglesheetServices.removePrevousDataColumeOnGoogleSheet(item.name, maxColumn);
             console.log(`onExportTopHolderByDay ${item.name} done`);
         } catch (e) {
             console.log(`onExportTopHolderByDay Error: ${e}`);
